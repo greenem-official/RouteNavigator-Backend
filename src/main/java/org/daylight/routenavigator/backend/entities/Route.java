@@ -1,9 +1,12 @@
 package org.daylight.routenavigator.backend.entities;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
 
 @Data
@@ -12,6 +15,7 @@ import java.time.OffsetDateTime;
 public class Route {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Setter(AccessLevel.NONE)
     private long id;
 
     @ManyToOne
@@ -31,4 +35,13 @@ public class Route {
 
     @Column(nullable = false, unique = false)
     private OffsetDateTime arrivalTime;
+
+    public Duration getDuration() {
+        return Duration.between(departureTime, arrivalTime);
+    }
+
+    @Override
+    public String toString() {
+        return "Route [id=" + id + ", departureLocation=" + departureLocation + ", arrivalLocation=" + arrivalLocation + "]";
+    }
 }

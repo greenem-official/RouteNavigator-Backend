@@ -1,4 +1,4 @@
-package org.daylight.routenavigator.backend.services;
+package org.daylight.routenavigator.backend.services.entitysaervices;
 
 import org.daylight.routenavigator.backend.entities.Location;
 import org.daylight.routenavigator.backend.entities.Route;
@@ -36,5 +36,13 @@ public class RouteService {
 
     public List<Route> findAllByArrivalTimeAfter(OffsetDateTime arrivalTime) {
         return routeRepository.findAllByArrivalTimeAfter(arrivalTime);
+    }
+
+    public List<Route> findAllByDepartureLocationAndDepartureTimeAfter(Location departureLocation, OffsetDateTime departureTime) {
+        return routeRepository.findAllByDepartureLocationAndDepartureTimeAfter(departureLocation, departureTime);
+    }
+
+    public List<Route> findAllByArrivalLocationAndArrivalTimeBefore(Location arrivalLocation, OffsetDateTime arrivalTime) {
+        return routeRepository.findAllByArrivalLocationAndArrivalTimeBefore(arrivalLocation, arrivalTime);
     }
 }

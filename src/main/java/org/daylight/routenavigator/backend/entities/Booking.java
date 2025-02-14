@@ -1,7 +1,9 @@
 package org.daylight.routenavigator.backend.entities;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import java.time.OffsetDateTime;
@@ -12,6 +14,7 @@ import java.time.OffsetDateTime;
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Setter(AccessLevel.NONE)
     private long id;
 
     @Column(nullable = false, unique = false)

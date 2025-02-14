@@ -10,6 +10,7 @@ import lombok.experimental.Accessors;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Setter(AccessLevel.NONE)
     private long id;
 
     @Column(nullable = false, unique = true)

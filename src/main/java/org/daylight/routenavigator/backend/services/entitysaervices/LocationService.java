@@ -1,4 +1,4 @@
-package org.daylight.routenavigator.backend.services;
+package org.daylight.routenavigator.backend.services.entitysaervices;
 
 import org.daylight.routenavigator.backend.entities.Location;
 import org.daylight.routenavigator.backend.repositories.LocationRepository;
@@ -21,7 +21,7 @@ public class LocationService {
     }
 
     public Optional<Location> findByCode(String code) {
-        return locationRepository.findByCode(code);
+        return locationRepository.findByCode(code.toLowerCase());
     }
 
     public Optional<Location> findByDisplayName(String displayName) {

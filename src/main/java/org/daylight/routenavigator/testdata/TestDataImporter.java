@@ -3,18 +3,23 @@ package org.daylight.routenavigator.testdata;
 import org.daylight.routenavigator.backend.entities.Location;
 import org.daylight.routenavigator.backend.entities.Route;
 import org.daylight.routenavigator.backend.entities.TransportType;
-import org.daylight.routenavigator.backend.services.LocationService;
-import org.daylight.routenavigator.backend.services.RouteService;
-import org.daylight.routenavigator.backend.services.TransportTypeService;
+import org.daylight.routenavigator.backend.services.entitysaervices.LocationService;
+import org.daylight.routenavigator.backend.services.entitysaervices.RouteService;
+import org.daylight.routenavigator.backend.services.entitysaervices.TransportTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import static org.daylight.routenavigator.constants.TimeContstants.formatter;
+
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.NoSuchElementException;
 
 @Component
 public class TestDataImporter implements CommandLineRunner {
+    private static final boolean DO_IMPORT = true;
+
     @Autowired
     private RouteService routeService;
 
@@ -24,43 +29,45 @@ public class TestDataImporter implements CommandLineRunner {
     @Autowired
     private TransportTypeService transportTypeService;
 
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssXXX");
-
     public TestDataImporter(RouteService routeService) {
         this.routeService = routeService;
     }
 
     @Override
     public void run(String... args) throws Exception {
-        resetAndImportData();
+        if (DO_IMPORT) resetAndImportData();
     }
 
     public void resetAndImportData() {
+        System.out.println("Importing data...");
+
         resetAndImportTransportTypes();
         resetAndImportLocations();
         resetAndImportRoutes();
+
+        System.out.println("Finished importing data");
     }
 
     public void resetAndImportTransportTypes() {
         transportTypeService.deleteAll();
 
         transportTypeService.save(new TransportType()
-                .setCode("transport_train")
+                .setCode("train")
                 .setDisplayName("Поезд")
         );
 
         transportTypeService.save(new TransportType()
-                .setCode("transport_plane")
+                .setCode("plane")
                 .setDisplayName("Самолёт")
         );
 
         transportTypeService.save(new TransportType()
-                .setCode("transport_bus")
+                .setCode("bus")
                 .setDisplayName("Автобус")
         );
 
         transportTypeService.save(new TransportType()
-                .setCode("transport_ship")
+                .setCode("ship")
                 .setDisplayName("Корабль")
         );
     }
@@ -69,49 +76,121 @@ public class TestDataImporter implements CommandLineRunner {
         locationService.deleteAll();
 
         locationService.save(new Location()
-                .setCode("location_msk")
+                .setCode("msk")
                 .setDisplayName("Москва")
         );
-
         locationService.save(new Location()
-                .setCode("location_spb")
+                .setCode("spb")
                 .setDisplayName("Санкт-Петербург")
         );
-
         locationService.save(new Location()
-                .setCode("location_crimea")
+                .setCode("crimea")
                 .setDisplayName("Крым")
         );
-
         locationService.save(new Location()
-                .setCode("location_volgograd")
+                .setCode("volgograd")
                 .setDisplayName("Волгоград")
+        );
+        locationService.save(new Location()
+                .setCode("novosibirsk")
+                .setDisplayName("Новосибирск")
+        );
+        locationService.save(new Location()
+                .setCode("yekaterinburg")
+                .setDisplayName("Екатеринбург")
+        );
+        locationService.save(new Location()
+                .setCode("nizhny novgorod")
+                .setDisplayName("Нижний Новгород")
+        );
+        locationService.save(new Location()
+                .setCode("kazan")
+                .setDisplayName("Казань")
+        );
+        locationService.save(new Location()
+                .setCode("rostov-on-don")
+                .setDisplayName("Ростов-на-Дону")
+        );
+        locationService.save(new Location()
+                .setCode("sochi")
+                .setDisplayName("Сочи")
         );
     }
 
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
     public void resetAndImportRoutes() {
         routeService.deleteAll();
 
-        routeService.save(new Route()
-                .setDepartureLocation(locationService.findByCode("location_msk").get())
-                .setArrivalLocation(locationService.findByCode("location_spb").get())
-                .setTransportType(transportTypeService.findByCode("transport_train").get())
-                .setDepartureTime(OffsetDateTime.parse("2025-03-20 10:30:00+03:00", formatter))
-                .setArrivalTime(OffsetDateTime.parse("2025-03-20 17:00:00+03:00", formatter))
-        );
-        routeService.save(new Route()
-                .setDepartureLocation(locationService.findByCode("location_msk").get())
-                .setArrivalLocation(locationService.findByCode("location_crimea").get())
-                .setTransportType(transportTypeService.findByCode("transport_plane").get())
-                .setDepartureTime(OffsetDateTime.parse("2025-03-24 20:00:00+03:00", formatter))
-                .setArrivalTime(OffsetDateTime.parse("2025-03-25 02:00:00+03:00", formatter))
-        );
-        routeService.save(new Route()
-                .setDepartureLocation(locationService.findByCode("location_msk").get())
-                .setArrivalLocation(locationService.findByCode("location_volgograd").get())
-                .setTransportType(transportTypeService.findByCode("transport_bus").get())
-                .setDepartureTime(OffsetDateTime.parse("2025-03-22 10:00:00+03:00", formatter))
-                .setArrivalTime(OffsetDateTime.parse("2025-03-22 16:40:00+03:00", formatter))
-        );
+        try {
+            routeService.save(new Route()
+                    .setDepartureLocation(locationService.findByCode("msk").get())
+                    .setArrivalLocation(locationService.findByCode("spb").get())
+                    .setTransportType(transportTypeService.findByCode("train").get())
+                    .setDepartureTime(OffsetDateTime.parse("2025-03-20 10:30:00+03:00", formatter))
+                    .setArrivalTime(OffsetDateTime.parse("2025-03-20 17:00:00+03:00", formatter))
+            );
+
+            routeService.save(new Route()
+                    .setDepartureLocation(locationService.findByCode("msk").get())
+                    .setArrivalLocation(locationService.findByCode("crimea").get())
+                    .setTransportType(transportTypeService.findByCode("plane").get())
+                    .setDepartureTime(OffsetDateTime.parse("2025-03-24 20:00:00+03:00", formatter))
+                    .setArrivalTime(OffsetDateTime.parse("2025-03-24 22:00:00+03:00", formatter))
+            );
+
+            routeService.save(new Route()
+                    .setDepartureLocation(locationService.findByCode("msk").get())
+                    .setArrivalLocation(locationService.findByCode("volgograd").get())
+                    .setTransportType(transportTypeService.findByCode("bus").get())
+                    .setDepartureTime(OffsetDateTime.parse("2025-03-22 10:00:00+03:00", formatter))
+                    .setArrivalTime(OffsetDateTime.parse("2025-03-24 11:40:00+03:00", formatter))
+            );
+            routeService.save(new Route()
+                    .setDepartureLocation(locationService.findByCode("volgograd").get())
+                    .setArrivalLocation(locationService.findByCode("novosibirsk").get())
+                    .setTransportType(transportTypeService.findByCode("train").get())
+                    .setDepartureTime(OffsetDateTime.parse("2025-03-26 12:00:00+03:00", formatter))
+                    .setArrivalTime(OffsetDateTime.parse("2025-03-29 14:30:00+03:00", formatter))
+            );
+
+            routeService.save(new Route()
+                    .setDepartureLocation(locationService.findByCode("crimea").get())
+                    .setArrivalLocation(locationService.findByCode("volgograd").get())
+                    .setTransportType(transportTypeService.findByCode("train").get())
+                    .setDepartureTime(OffsetDateTime.parse("2025-03-25 02:00:00+03:00", formatter))
+                    .setArrivalTime(OffsetDateTime.parse("2025-03-25 14:00:00+03:00", formatter))
+            );
+            routeService.save(new Route()
+                    .setDepartureLocation(locationService.findByCode("volgograd").get())
+                    .setArrivalLocation(locationService.findByCode("novosibirsk").get())
+                    .setTransportType(transportTypeService.findByCode("train").get())
+                    .setDepartureTime(OffsetDateTime.parse("2025-03-25 16:00:00+03:00", formatter))
+                    .setArrivalTime(OffsetDateTime.parse("2025-03-26 11:30:00+03:00", formatter))
+            );
+
+            routeService.save(new Route()
+                    .setDepartureLocation(locationService.findByCode("spb").get())
+                    .setArrivalLocation(locationService.findByCode("yekaterinburg").get())
+                    .setTransportType(transportTypeService.findByCode("bus").get())
+                    .setDepartureTime(OffsetDateTime.parse("2025-03-22 17:30:00+03:00", formatter))
+                    .setArrivalTime(OffsetDateTime.parse("2025-03-24 10:00:00+03:00", formatter))
+            );
+            routeService.save(new Route()
+                    .setDepartureLocation(locationService.findByCode("yekaterinburg").get())
+                    .setArrivalLocation(locationService.findByCode("rostov-on-don").get())
+                    .setTransportType(transportTypeService.findByCode("train").get())
+                    .setDepartureTime(OffsetDateTime.parse("2025-03-26 15:30:00+03:00", formatter))
+                    .setArrivalTime(OffsetDateTime.parse("2025-03-27 08:00:00+03:00", formatter))
+            );
+            routeService.save(new Route()
+                    .setDepartureLocation(locationService.findByCode("rostov-on-don").get())
+                    .setArrivalLocation(locationService.findByCode("novosibirsk").get())
+                    .setTransportType(transportTypeService.findByCode("plane").get())
+                    .setDepartureTime(OffsetDateTime.parse("2025-03-28 15:30:00+03:00", formatter))
+                    .setArrivalTime(OffsetDateTime.parse("2025-03-28 18:00:00+03:00", formatter))
+            );
+        } catch (NoSuchElementException e) {
+            System.out.println(e.getMessage());
+        }
     }
 }

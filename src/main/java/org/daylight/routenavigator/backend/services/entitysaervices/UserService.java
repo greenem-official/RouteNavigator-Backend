@@ -1,4 +1,4 @@
-package org.daylight.routenavigator.backend.services;
+package org.daylight.routenavigator.backend.services.entitysaervices;
 
 import org.daylight.routenavigator.backend.entities.Token;
 import org.daylight.routenavigator.backend.entities.User;

@@ -1,4 +1,4 @@
-package org.daylight.routenavigator.backend.services;
+package org.daylight.routenavigator.backend.services.entitysaervices;
 
 import org.daylight.routenavigator.backend.entities.TransportType;
 import org.daylight.routenavigator.backend.repositories.TransportTypeRepository;
@@ -21,7 +21,7 @@ public class TransportTypeService {
     }
 
     public Optional<TransportType> findByCode(String code) {
-        return transportTypeRepository.findByCode(code);
+        return transportTypeRepository.findByCode(code.toLowerCase());
     }
 
     public Optional<TransportType> findByDisplayName(String displayName) {
