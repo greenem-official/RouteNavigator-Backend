@@ -36,6 +36,9 @@ public class Route {
     @Column(nullable = false, unique = false)
     private OffsetDateTime arrivalTime;
 
+    @Column(nullable = false, unique = false)
+    private int price;
+
     public Duration getDuration() {
         return Duration.between(departureTime, arrivalTime);
     }

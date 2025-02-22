@@ -3,8 +3,11 @@ package org.daylight.routenavigator.backend.services.entitysaervices;
 import org.daylight.routenavigator.backend.entities.Location;
 import org.daylight.routenavigator.backend.repositories.LocationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -26,5 +29,9 @@ public class LocationService {
 
     public Optional<Location> findByDisplayName(String displayName) {
         return locationRepository.findByDisplayName(displayName);
+    }
+
+    public List<Location> findMatching(String text, int limit) {
+        return locationRepository.findByDisplayNameStartingWith(text, PageRequest.of(0, limit));
     }
 }

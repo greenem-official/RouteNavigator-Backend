@@ -5,6 +5,8 @@ import org.daylight.routenavigator.backend.entities.Location;
 import org.daylight.routenavigator.backend.entities.Route;
 import org.daylight.routenavigator.backend.entities.Token;
 import org.daylight.routenavigator.backend.entities.User;
+import org.daylight.routenavigator.backend.model.incoming.RouteSearchRequest;
+import org.daylight.routenavigator.backend.model.incoming.TextSearchRequest;
 import org.daylight.routenavigator.backend.model.incoming.TokenCheckRequest;
 import org.daylight.routenavigator.backend.model.outcoming.ErrorResponse;
 import org.daylight.routenavigator.backend.model.incoming.LoginFormRequest;
@@ -16,18 +18,16 @@ import org.daylight.routenavigator.constants.TimeContstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/main")
+//@CrossOrigin(origins = "*")
 public class MainRestController {
     @Autowired
     private UserService userService;
@@ -43,6 +43,8 @@ public class MainRestController {
 
     @Autowired
     private LocationService locationService;
+    @Autowired
+    private TransportTypeService transportTypeService;
 
     @GetMapping(value = "/login", consumes = "application/json") // {thing}
     public ResponseEntity<?> login(@Valid @RequestBody LoginFormRequest loginFormRequest) { // @PathVariable String thing
@@ -149,5 +151,52 @@ public class MainRestController {
         }
 
         return new ResponseEntity<>(new MessageResponse("test"), HttpStatus.OK);
+    }
+
+    // Move to somewhere else
+    private final List<String> possibleTransportTypes = Arrays.asList("transport_plane", "transport_train", "transport_bus");
+
+    @PostMapping(value = "/findRoutes", consumes = "application/json")
+    public ResponseEntity<?> findRoutes(@RequestBody RouteSearchRequest routeSearchRequest) {
+        System.out.println(routeSearchRequest.toString());
+        try {
+            OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMin());
+            OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMax());
+        } catch (DateTimeParseException e) {
+            return new ResponseEntity<>(new ErrorResponse("Invalid time format"), HttpStatus.BAD_REQUEST);
+        }
+
+//        if (routeSearchRequest.isThisDateOnly()) {
+//            // Single date request
+//            routeSearchRequest.setDepartureTimeMax(routeSearchRequest.getDepartureTimeMin()
+//                    .truncatedTo(ChronoUnit.DAYS)
+//                    .plusDays(1)
+//            );
+//        } else {
+////            // Limiting max search timespan
+////            OffsetDateTime maxTechnicallyAllowedDepartureTime = routeSearchRequest.getDepartureTimeMin()
+////                    .truncatedTo(ChronoUnit.DAYS)
+////                    .plusDays(14);
+////            if (maxTechnicallyAllowedDepartureTime.isBefore(routeSearchRequest.getDepartureTimeMax())) {
+////                routeSearchRequest.setDepartureTimeMax(maxTechnicallyAllowedDepartureTime);
+////            }
+//        }
+        try {
+            List<Route> routes = routeService.findAllByRequest(routeSearchRequest);
+            return new ResponseEntity<>(routes, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+//            e.printStackTrace();
+            return new ResponseEntity<>(new ErrorResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping(value = "/getLocations")
+    public ResponseEntity<?> getLocations(@Valid @RequestParam String text) {
+        return new ResponseEntity<>(locationService.findMatching(text.trim(), 100), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/getTransportTypes")
+    public ResponseEntity<?> getTransportTypes(@Valid @RequestParam String text) {
+        return new ResponseEntity<>(transportTypeService.findMatching(text.trim(), 100), HttpStatus.OK);
     }
 }
