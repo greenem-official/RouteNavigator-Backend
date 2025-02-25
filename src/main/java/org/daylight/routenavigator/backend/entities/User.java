@@ -6,6 +6,7 @@ import lombok.experimental.Accessors;
 
 @Data
 @Entity
+@Table(name = "users")
 @Accessors(chain = true)
 public class User {
     @Id

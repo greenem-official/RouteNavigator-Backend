@@ -14,6 +14,8 @@ import java.util.UUID;
 public class TokenResponse {
     private UUID token;
     private OffsetDateTime expires;
+    private String userUsername;
+    private String userEmail;
 
     public TokenResponse(Token tokenObject) {
         this.token = tokenObject.getToken();

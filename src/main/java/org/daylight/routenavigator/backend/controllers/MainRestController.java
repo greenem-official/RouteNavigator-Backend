@@ -25,6 +25,9 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+/**
+ * The main rest controller for the backend
+ */
 @RestController
 @RequestMapping("/api/main")
 //@CrossOrigin(origins = "*")
@@ -46,58 +49,102 @@ public class MainRestController {
     @Autowired
     private TransportTypeService transportTypeService;
 
-    @GetMapping(value = "/login", consumes = "application/json") // {thing}
-    public ResponseEntity<?> login(@Valid @RequestBody LoginFormRequest loginFormRequest) { // @PathVariable String thing
+    /**
+     * A login endpoint
+     * @param loginFormRequest The login form data
+     * @return A new token info or an error
+     */
+    @PostMapping(value = "/login", consumes = "application/json")
+    public ResponseEntity<?> login(@Valid @RequestBody LoginFormRequest loginFormRequest) {
+        // Looking for a matching registered user
         Optional<User> userIfCorrect = userService.findByEmailAndPassword(loginFormRequest.getEmail(), loginFormRequest.getPassword());
-        if (userIfCorrect.isPresent()) {
-            Token newToken = tokenService.generateToken(userIfCorrect.get().getId());
-            return new ResponseEntity<>(new TokenResponse(newToken), HttpStatus.OK);
-        } else {
+
+        // If email and password didn't match any account
+        if (userIfCorrect.isEmpty()) {
             Optional<User> userIfRegistered = userService.findByEmail(loginFormRequest.getEmail());
-            if (userIfRegistered.isPresent()) {
-                return new ResponseEntity<>(new ErrorResponse("Wrong password"), HttpStatus.OK);
-            }
+
+            // The provided password is wrong
+            if (userIfRegistered.isPresent()) return new ResponseEntity<>(new ErrorResponse("Wrong password"), HttpStatus.OK);
+
+            // The user is not even registered
             return new ResponseEntity<>(new ErrorResponse("Not registered"), HttpStatus.OK);
         }
+
+        // Generating a token and sending the result
+        Token newToken = tokenService.generateToken(userIfCorrect.get().getId());
+        return new ResponseEntity<>(new TokenResponse(newToken)
+                .setUserUsername(userIfCorrect.get().getUsername())
+                .setUserEmail(userIfCorrect.get().getEmail())
+                , HttpStatus.OK);
     }
 
-    @GetMapping(value = "/register", consumes = "application/json")
-    public ResponseEntity<?> register(@Valid @RequestBody LoginFormRequest loginFormRequest) {
-        Optional<User> user = userService.findByEmailAndPassword(loginFormRequest.getEmail(), loginFormRequest.getPassword());
+    /**
+     * A registration endpoint
+     * @param registrationFormRequest The registration form data
+     * @return A new token info or an error
+     */
+    @PostMapping(value = "/register", consumes = "application/json")
+    public ResponseEntity<?> register(@Valid @RequestBody LoginFormRequest registrationFormRequest) {
+        if (registrationFormRequest.getUsername() == null) {
+            return new ResponseEntity<>(new ErrorResponse("Username is required"), HttpStatus.BAD_REQUEST);
+        }
+
+        // Checking that the user is not registered already
+        Optional<User> user = userService.findByEmailAndPassword(registrationFormRequest.getEmail(), registrationFormRequest.getPassword());
         if (user.isPresent()) {
             return new ResponseEntity<>(new ErrorResponse("Already registered"), HttpStatus.OK);
-        } else {
-            User newUser = new User()
-                    .setEmail(loginFormRequest.getEmail())
-                    .setPassword(loginFormRequest.getPassword());
-            userService.save(newUser);
-
-            Token newToken = tokenService.generateToken(newUser.getId());
-            return new ResponseEntity<>(new TokenResponse(newToken), HttpStatus.OK);
         }
+
+        // Registering the user
+        User newUser = new User()
+                .setUsername(registrationFormRequest.getUsername())
+                .setEmail(registrationFormRequest.getEmail())
+                .setPassword(registrationFormRequest.getPassword());
+        userService.save(newUser);
+
+        // Generating a token and sending the result
+        Token newToken = tokenService.generateToken(newUser.getId());
+        return new ResponseEntity<>(new TokenResponse(newToken), HttpStatus.OK);
     }
 
+    /**
+     * An endpoint for checking the token and getting user information
+     * @param tokenCheckRequest The request data
+     * @return The token info or an error
+     */
     @GetMapping(value = "/checkToken", consumes = "application/json")
     public ResponseEntity<?> checkToken(@Valid @RequestBody TokenCheckRequest tokenCheckRequest) {
+        // Parsing the UUID object
         UUID uuid;
         try {
             uuid = UUID.fromString(tokenCheckRequest.getToken());
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(new ErrorResponse("Invalid token"), HttpStatus.BAD_REQUEST);
         }
+
+        // Checking if token is real
         Optional<Token> token = tokenService.findByToken(uuid);
-        if (token.isPresent()) {
-            boolean active = tokenService.checkTokenActive(token.get());
-            if (!active) {
-                return new ResponseEntity<>(new MessageResponse("Token expired"), HttpStatus.OK);
-            }
-            else {
-                // Success
-                return new ResponseEntity<>(new TokenResponse(token.get()), HttpStatus.OK);
-            }
-        } else {
+        if (token.isEmpty()) {
             return new ResponseEntity<>(new MessageResponse("Token not found"), HttpStatus.OK);
         }
+
+        // Checking if token is not expired
+        boolean active = tokenService.checkTokenActive(token.get());
+        if (!active) {
+            return new ResponseEntity<>(new MessageResponse("Token expired"), HttpStatus.OK);
+        }
+
+        // Finding the user
+        Optional<User> user = userService.findById(token.get().getUserId());
+        if (user.isEmpty()) {
+            return new ResponseEntity<>(new ErrorResponse("User not found"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        // Sending the result
+        return new ResponseEntity<>(new TokenResponse(token.get())
+                .setUserUsername(user.get().getUsername())
+                .setUserEmail(user.get().getEmail())
+                , HttpStatus.OK);
     }
 
     @GetMapping(value = "/test")
@@ -153,12 +200,14 @@ public class MainRestController {
         return new ResponseEntity<>(new MessageResponse("test"), HttpStatus.OK);
     }
 
-    // Move to somewhere else
-    private final List<String> possibleTransportTypes = Arrays.asList("transport_plane", "transport_train", "transport_bus");
-
+    /**
+     * An endpoint for querying matching routes
+     * @param routeSearchRequest The route search request data
+     * @return A list of available routes or an error
+     */
     @PostMapping(value = "/findRoutes", consumes = "application/json")
     public ResponseEntity<?> findRoutes(@RequestBody RouteSearchRequest routeSearchRequest) {
-        System.out.println(routeSearchRequest.toString());
+//        System.out.println(routeSearchRequest.toString());
         try {
             OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMin());
             OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMax());
@@ -190,11 +239,21 @@ public class MainRestController {
         }
     }
 
+    /**
+     * An endpoint for querying a list of locations matching a text
+     * @param text The beginning of the location's display name
+     * @return A list of matching locations
+     */
     @GetMapping(value = "/getLocations")
     public ResponseEntity<?> getLocations(@Valid @RequestParam String text) {
         return new ResponseEntity<>(locationService.findMatching(text.trim(), 100), HttpStatus.OK);
     }
 
+    /**
+     * An endpoint for querying a list of transport types matching a text
+     * @param text The beginning of the transport type's display name
+     * @return A list of matching transport types
+     */
     @GetMapping(value = "/getTransportTypes")
     public ResponseEntity<?> getTransportTypes(@Valid @RequestParam String text) {
         return new ResponseEntity<>(transportTypeService.findMatching(text.trim(), 100), HttpStatus.OK);

@@ -112,6 +112,6 @@ public class RouteService {
                 routeSearchRequest.getMinPrice(),
                 routeSearchRequest.getMaxPrice(),
                 PageRequest.of(0, Math.min(100, routeSearchRequest.getAmountLimit()))
-                );
+        );
     }
 }
