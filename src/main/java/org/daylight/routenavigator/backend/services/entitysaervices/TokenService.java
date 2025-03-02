@@ -1,6 +1,8 @@
 package org.daylight.routenavigator.backend.services.entitysaervices;
 
+import org.daylight.routenavigator.backend.components.SpringContextHolder;
 import org.daylight.routenavigator.backend.entities.Token;
+import org.daylight.routenavigator.backend.entities.User;
 import org.daylight.routenavigator.backend.repositories.TokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,12 +37,25 @@ public class TokenService {
                 .toList();
     }
 
-    public Token generateToken(long userId) {
-        OffsetDateTime expires = OffsetDateTime.now().plusDays(7);
-        return generateToken(userId, expires);
+    private Optional<User> findUserById(long userId) {
+        UserService userService = SpringContextHolder.getBean(UserService.class);
+        return userService.findById(userId);
     }
 
-    public Token generateToken(long userId, OffsetDateTime expires) {
+    public Optional<Token> generateToken(long userId) {
+        Optional<User> user = findUserById(userId);
+        if (user.isEmpty()) {
+            return Optional.empty();
+        }
+        return generateToken(user.get());
+    }
+
+    public Optional<Token> generateToken(User user) {
+        OffsetDateTime expires = OffsetDateTime.now().plusDays(7);
+        return generateToken(user, expires);
+    }
+
+    public Optional<Token> generateToken(User user, OffsetDateTime expires) {
         int batchSize = 100;
         List<UUID> uniqueTokens = new ArrayList<>();
 
@@ -55,11 +70,11 @@ public class TokenService {
 
         UUID uniqueToken = uniqueTokens.getFirst();
         Token token = new Token()
-                .setUserId(userId)
+                .setUser(user)
                 .setToken(uniqueToken)
                 .setExpires(expires);
         tokenRepository.save(token);
-        return token;
+        return Optional.of(token);
     }
 
     public boolean checkTokenActive(Token token) {

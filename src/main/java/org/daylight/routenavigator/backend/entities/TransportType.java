@@ -1,5 +1,6 @@
 package org.daylight.routenavigator.backend.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -8,10 +9,12 @@ import lombok.experimental.Accessors;
 
 @Data
 @Entity
+@Table(name = "transport_types")
 @Accessors(chain = true)
 public class TransportType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonIgnore
     @Setter(AccessLevel.NONE)
     private long id;
 

@@ -3,6 +3,7 @@ package org.daylight.routenavigator.backend.services.entitysaervices;
 import org.daylight.routenavigator.backend.entities.Token;
 import org.daylight.routenavigator.backend.entities.User;
 import org.daylight.routenavigator.backend.repositories.UserRepository;
+import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,15 +30,19 @@ public class UserService {
         return userRepository.findByEmailAndPassword(email, password);
     }
 
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
-    public Optional<User> findUserFromToken(UUID tokenUuid) {
-        Optional<Token> token = tokenService.findByToken(tokenUuid);
-        if (token.isPresent() && tokenService.checkTokenActive(token.get())) {
-            return this.findById(token.get().getUserId());
-        }
-        return Optional.empty();
-    }
+//    public Optional<User> findUserFromToken(UUID tokenUuid) {
+//        Optional<Token> token = tokenService.findByToken(tokenUuid);
+//        if (token.isPresent() && tokenService.checkTokenActive(token.get())) {
+//            return this.findById(token.get().getUserId());
+//        }
+//        return Optional.empty();
+//    }
 }

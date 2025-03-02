@@ -35,6 +35,7 @@ public class TestDataImporter implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         if (DO_IMPORT) resetAndImportData();
+        else System.out.println("Leaving database data untouched");
     }
 
     public void resetAndImportData() {

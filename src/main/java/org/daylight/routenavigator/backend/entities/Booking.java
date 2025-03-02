@@ -10,6 +10,7 @@ import java.time.OffsetDateTime;
 
 @Data
 @Entity
+@Table(name = "bookings")
 @Accessors(chain = true)
 public class Booking {
     @Id
@@ -17,12 +18,16 @@ public class Booking {
     @Setter(AccessLevel.NONE)
     private long id;
 
-    @Column(nullable = false, unique = false)
-    private long userId;
+    @ManyToOne
+    @JoinColumn(nullable = false, unique = false)
+    private User user;
 
     @Column(nullable = false, unique = true)
     private long routeId;
 
     @Column(nullable = true, unique = false)
     private OffsetDateTime bookedAt;
+
+    @Column(nullable = true, unique = false)
+    private int ticketAmount = 1;
 }

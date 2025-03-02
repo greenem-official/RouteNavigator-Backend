@@ -1,25 +1,24 @@
 package org.daylight.routenavigator.backend.controllers;
 
 import jakarta.validation.Valid;
-import org.daylight.routenavigator.backend.entities.Location;
-import org.daylight.routenavigator.backend.entities.Route;
-import org.daylight.routenavigator.backend.entities.Token;
-import org.daylight.routenavigator.backend.entities.User;
-import org.daylight.routenavigator.backend.model.incoming.RouteSearchRequest;
-import org.daylight.routenavigator.backend.model.incoming.TextSearchRequest;
-import org.daylight.routenavigator.backend.model.incoming.TokenCheckRequest;
+import org.daylight.routenavigator.backend.auth.TokenManager;
+import org.daylight.routenavigator.backend.entities.*;
+import org.daylight.routenavigator.backend.model.incoming.*;
 import org.daylight.routenavigator.backend.model.outcoming.ErrorResponse;
-import org.daylight.routenavigator.backend.model.incoming.LoginFormRequest;
 import org.daylight.routenavigator.backend.model.outcoming.MessageResponse;
 import org.daylight.routenavigator.backend.model.outcoming.TokenResponse;
 import org.daylight.routenavigator.backend.services.entitysaervices.*;
 import org.daylight.routenavigator.backend.services.generalservices.Dijkstra3_2;
 import org.daylight.routenavigator.constants.TimeContstants;
+import org.javatuples.Pair;
+import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
@@ -64,15 +63,19 @@ public class MainRestController {
             Optional<User> userIfRegistered = userService.findByEmail(loginFormRequest.getEmail());
 
             // The provided password is wrong
-            if (userIfRegistered.isPresent()) return new ResponseEntity<>(new ErrorResponse("Wrong password"), HttpStatus.OK);
+            if (userIfRegistered.isPresent()) return new ResponseEntity<>(new ErrorResponse("wrong_password"), HttpStatus.OK);
 
             // The user is not even registered
-            return new ResponseEntity<>(new ErrorResponse("Not registered"), HttpStatus.OK);
+            return new ResponseEntity<>(new ErrorResponse("user_not_found"), HttpStatus.OK);
         }
 
         // Generating a token and sending the result
-        Token newToken = tokenService.generateToken(userIfCorrect.get().getId());
-        return new ResponseEntity<>(new TokenResponse(newToken)
+        Optional<Token> newToken = tokenService.generateToken(userIfCorrect.get());
+        if (newToken.isEmpty()) {
+            return new ResponseEntity<>(new ErrorResponse("invalid_token"), HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(new TokenResponse(newToken.get())
                 .setUserUsername(userIfCorrect.get().getUsername())
                 .setUserEmail(userIfCorrect.get().getEmail())
                 , HttpStatus.OK);
@@ -89,22 +92,44 @@ public class MainRestController {
             return new ResponseEntity<>(new ErrorResponse("Username is required"), HttpStatus.BAD_REQUEST);
         }
 
-        // Checking that the user is not registered already
-        Optional<User> user = userService.findByEmailAndPassword(registrationFormRequest.getEmail(), registrationFormRequest.getPassword());
+        // Looking for a registered user with the same email
+        Optional<User> user = userService.findByEmail(registrationFormRequest.getEmail());
         if (user.isPresent()) {
-            return new ResponseEntity<>(new ErrorResponse("Already registered"), HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ErrorResponse("email_already_registered"));
+        }
+
+        // Looking for a registered user with the same email
+        Optional<User> userByName = userService.findByUsername(registrationFormRequest.getUsername());
+        if (userByName.isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ErrorResponse("username_already_registered"));
         }
 
         // Registering the user
         User newUser = new User()
-                .setUsername(registrationFormRequest.getUsername())
                 .setEmail(registrationFormRequest.getEmail())
+                .setUsername(registrationFormRequest.getUsername())
                 .setPassword(registrationFormRequest.getPassword());
-        userService.save(newUser);
+
+        try {
+            userService.save(newUser);
+        } catch (DataIntegrityViolationException e) {
+//            System.out.println(e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(new ErrorResponse("internal_error"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
         // Generating a token and sending the result
-        Token newToken = tokenService.generateToken(newUser.getId());
-        return new ResponseEntity<>(new TokenResponse(newToken), HttpStatus.OK);
+        Optional<Token> newToken = tokenService.generateToken(newUser);
+        if (newToken.isEmpty()) {
+            return new ResponseEntity<>(new ErrorResponse("invalid_token"), HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(new TokenResponse(newToken.get())
+                .setUserUsername(newUser.getUsername())
+                .setUserEmail(newUser.getEmail())
+                , HttpStatus.OK);
     }
 
     /**
@@ -114,37 +139,15 @@ public class MainRestController {
      */
     @GetMapping(value = "/checkToken", consumes = "application/json")
     public ResponseEntity<?> checkToken(@Valid @RequestBody TokenCheckRequest tokenCheckRequest) {
-        // Parsing the UUID object
-        UUID uuid;
-        try {
-            uuid = UUID.fromString(tokenCheckRequest.getToken());
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(new ErrorResponse("Invalid token"), HttpStatus.BAD_REQUEST);
+        Pair<Token, ResponseEntity<?>> tokenResult = TokenManager.findToken(tokenCheckRequest.getToken());
+        if (tokenResult.getValue1() != null) return tokenResult.getValue1();
+        else {
+            Token token = tokenResult.getValue0();
+            return new ResponseEntity<>(new TokenResponse(token)
+                    .setUserUsername(token.getUser().getUsername())
+                    .setUserEmail(token.getUser().getEmail())
+                    , HttpStatus.OK);
         }
-
-        // Checking if token is real
-        Optional<Token> token = tokenService.findByToken(uuid);
-        if (token.isEmpty()) {
-            return new ResponseEntity<>(new MessageResponse("Token not found"), HttpStatus.OK);
-        }
-
-        // Checking if token is not expired
-        boolean active = tokenService.checkTokenActive(token.get());
-        if (!active) {
-            return new ResponseEntity<>(new MessageResponse("Token expired"), HttpStatus.OK);
-        }
-
-        // Finding the user
-        Optional<User> user = userService.findById(token.get().getUserId());
-        if (user.isEmpty()) {
-            return new ResponseEntity<>(new ErrorResponse("User not found"), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        // Sending the result
-        return new ResponseEntity<>(new TokenResponse(token.get())
-                .setUserUsername(user.get().getUsername())
-                .setUserEmail(user.get().getEmail())
-                , HttpStatus.OK);
     }
 
     @GetMapping(value = "/test")
@@ -237,6 +240,23 @@ public class MainRestController {
 //            e.printStackTrace();
             return new ResponseEntity<>(new ErrorResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @PostMapping(value = "/bookRoute", consumes = "application/json")
+    public ResponseEntity<?> bookRoute(@Valid @RequestBody BookRouteRequest bookRouteRequest, @RequestHeader("Authorization") String authHeader) {
+        Pair<Token, ResponseEntity<?>> tokenResult = TokenManager.findToken(authHeader);
+        if(tokenResult.getValue1() != null) return tokenResult.getValue1();
+
+        Token token = tokenResult.getValue0();
+
+        Booking booking = new Booking()
+                .setRouteId(bookRouteRequest.getRouteId())
+                .setUser(token.getUser())
+                .setBookedAt(OffsetDateTime.now())
+                .setTicketAmount(bookRouteRequest.getTicketsAmount());
+        bookingService.save(booking);
+
+        return new ResponseEntity<>(new MessageResponse("Success"), HttpStatus.OK);
     }
 
     /**
