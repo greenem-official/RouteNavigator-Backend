@@ -11,17 +11,14 @@ import org.daylight.routenavigator.backend.services.entitysaervices.*;
 import org.daylight.routenavigator.backend.services.generalservices.Dijkstra3_2;
 import org.daylight.routenavigator.constants.TimeContstants;
 import org.javatuples.Pair;
-import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /**
@@ -209,7 +206,7 @@ public class MainRestController {
      * @return A list of available routes or an error
      */
     @PostMapping(value = "/findRoutes", consumes = "application/json")
-    public ResponseEntity<?> findRoutes(@RequestBody RouteSearchRequest routeSearchRequest) {
+    public ResponseEntity<?> findRoutes(@Valid @RequestBody RouteSearchRequest routeSearchRequest) {
 //        System.out.println(routeSearchRequest.toString());
         try {
             OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMin());
@@ -246,17 +243,46 @@ public class MainRestController {
     public ResponseEntity<?> bookRoute(@Valid @RequestBody BookRouteRequest bookRouteRequest, @RequestHeader("Authorization") String authHeader) {
         Pair<Token, ResponseEntity<?>> tokenResult = TokenManager.findToken(authHeader);
         if(tokenResult.getValue1() != null) return tokenResult.getValue1();
-
         Token token = tokenResult.getValue0();
 
+        Optional<Route> route = routeService.findById(bookRouteRequest.getRouteId());
+        if(route.isEmpty()) return new ResponseEntity<>(new ErrorResponse("route_not_found"), HttpStatus.NOT_FOUND);
+
         Booking booking = new Booking()
-                .setRouteId(bookRouteRequest.getRouteId())
+                .setRoute(route.get())
                 .setUser(token.getUser())
                 .setBookedAt(OffsetDateTime.now())
                 .setTicketAmount(bookRouteRequest.getTicketsAmount());
         bookingService.save(booking);
 
-        return new ResponseEntity<>(new MessageResponse("Success"), HttpStatus.OK);
+        return new ResponseEntity<>(new MessageResponse("route_booking_success"), HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/modifyBooking", consumes = "application/json")
+    public ResponseEntity<?> modifyRouteBooking(@Valid @RequestBody ModifyRouteBookingRequest modifyRouteBookingRequest, @RequestHeader("Authorization") String authHeader) {
+        Pair<Token, ResponseEntity<?>> tokenResult = TokenManager.findToken(authHeader);
+        if(tokenResult.getValue1() != null) return tokenResult.getValue1();
+        Token token = tokenResult.getValue0();
+
+        Optional<Booking> booking = bookingService.findById(modifyRouteBookingRequest.getBookingId());
+        if(booking.isEmpty()) return new ResponseEntity<>(new ErrorResponse("booking_not_found"), HttpStatus.NOT_FOUND);
+        if(booking.get().getUser().getId() != token.getUser().getId()) return new ResponseEntity<>(new ErrorResponse("booking_not_available"), HttpStatus.UNAUTHORIZED);
+
+        booking.get().setTicketAmount(modifyRouteBookingRequest.getSetTicketsAmount());
+        bookingService.save(booking.get());
+
+        return new ResponseEntity<>(new MessageResponse("booking_modification_success"), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/getBookings", consumes = "application/json")
+    public ResponseEntity<?> getAllBookings(@RequestHeader("Authorization") String authHeader) {
+        Pair<Token, ResponseEntity<?>> tokenResult = TokenManager.findToken(authHeader);
+        if(tokenResult.getValue1() != null) return tokenResult.getValue1();
+        Token token = tokenResult.getValue0();
+
+        List<Booking> bookings = bookingService.findAllByUser(token.getUser());
+
+        return new ResponseEntity<>(bookings, HttpStatus.OK);
     }
 
     /**

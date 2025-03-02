@@ -1,5 +1,6 @@
 package org.daylight.routenavigator.backend.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -19,11 +20,13 @@ public class Booking {
     private long id;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(nullable = false, unique = false)
     private User user;
 
-    @Column(nullable = false, unique = true)
-    private long routeId;
+    @ManyToOne
+    @JoinColumn(nullable = false, unique = false)
+    private Route route;
 
     @Column(nullable = true, unique = false)
     private OffsetDateTime bookedAt;

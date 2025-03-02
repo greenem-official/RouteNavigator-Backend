@@ -27,7 +27,7 @@ public class TokenManager {
         try {
             uuid = UUID.fromString(token);
         } catch (IllegalArgumentException e) {
-            return new Pair<>(null, new ResponseEntity<>(new ErrorResponse("Invalid token"), HttpStatus.BAD_REQUEST));
+            return new Pair<>(null, new ResponseEntity<>(new ErrorResponse("invalid_token"), HttpStatus.BAD_REQUEST));
         }
 
         return findToken(uuid);
@@ -39,13 +39,13 @@ public class TokenManager {
         // Checking if token is real
         Optional<Token> token = tokenService.findByToken(tokenText);
         if (token.isEmpty()) {
-            return new Pair<>(null, new ResponseEntity<>(new ErrorResponse("Token not found"), HttpStatus.OK));
+            return new Pair<>(null, new ResponseEntity<>(new ErrorResponse("token_not_found"), HttpStatus.OK));
         }
 
         // Checking if token is not expired
         boolean active = tokenService.checkTokenActive(token.get());
         if (!active) {
-            return new Pair<>(null, new ResponseEntity<>(new ErrorResponse("Token expired"), HttpStatus.OK));
+            return new Pair<>(null, new ResponseEntity<>(new ErrorResponse("token_expired"), HttpStatus.OK));
         }
 
         // Sending the result

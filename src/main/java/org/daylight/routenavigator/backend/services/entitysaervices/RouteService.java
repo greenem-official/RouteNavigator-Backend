@@ -37,6 +37,10 @@ public class RouteService {
         routeRepository.saveAll(routes);
     }
 
+    public Optional<Route> findById(long id) {
+        return routeRepository.findById(id);
+    }
+
     public List<Route> findAllByDepartureLocation(Location departureLocation) {
         return routeRepository.findAllByDepartureLocation(departureLocation);
     }
