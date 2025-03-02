@@ -3,6 +3,7 @@ package org.daylight.routenavigator.backend.model.incoming;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.hibernate.validator.constraints.Range;
 
@@ -24,7 +25,10 @@ public class RouteSearchRequest {
     String departureTimeMin;
 
     @NotNull
-    boolean thisDateOnly;
+    int fetchDays; // -1 for default
+
+    @NotNull
+    boolean fetchAvailability = false; // true if should return only info of what dates have routes
 
     @NotNull
     Map<String, Boolean> transportAllowed;

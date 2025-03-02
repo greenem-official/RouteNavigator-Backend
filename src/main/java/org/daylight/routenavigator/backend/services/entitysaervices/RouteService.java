@@ -65,8 +65,7 @@ public class RouteService {
         return routeRepository.findAllByArrivalLocationAndArrivalTimeBefore(arrivalLocation, arrivalTime);
     }
 
-    public List<Route> findAllByRequest(RouteSearchRequest routeSearchRequest) {
-        // Finding and checking provided transport types;
+    private List<TransportType> extractTransportTypes(RouteSearchRequest routeSearchRequest) {
         List<TransportType> transportTypes = new ArrayList<>();
         routeSearchRequest.getTransportAllowed().forEach((key, value) -> {
             if (value) {
@@ -78,37 +77,74 @@ public class RouteService {
             }
         });
 
-        // Finding and checking provided locations
-        Optional<Location> departureLocation = locationService.findByDisplayName(routeSearchRequest.getDepartureLocation());
-        Optional<Location> arrivalLocation = locationService.findByDisplayName(routeSearchRequest.getArrivalLocation());
+        return transportTypes;
+    }
 
-        Location departureLocationFinal = null;
-        Location arrivalLocationFinal = null;
-
-        if ((!routeSearchRequest.getDepartureLocation().isEmpty() && departureLocation.isEmpty()) ||
-                (!routeSearchRequest.getArrivalLocation().isEmpty() && arrivalLocation.isEmpty())) {
+    private Location extractLocation(String locationData) {
+        Optional<Location> location = locationService.findByDisplayName(locationData);
+        if (!locationData.isEmpty() && location.isEmpty()) {
             throw new IllegalArgumentException("Invalid departure or arrival location");
         }
 
-        if (departureLocation.isPresent()) {
-            departureLocationFinal = departureLocation.get();
-        }
-        if (arrivalLocation.isPresent()) {
-            arrivalLocationFinal = arrivalLocation.get();
+        Location locationResult = null;
+
+        if (location.isPresent()) {
+            locationResult = location.get();
         }
 
-        // If that's a single date request
-        if (routeSearchRequest.isThisDateOnly()) {
+        return locationResult;
+    }
+
+    public List<Route> findAllByRequest(RouteSearchRequest routeSearchRequest) {
+        // Finding and checking provided transport types;
+        List<TransportType> transportTypes = extractTransportTypes(routeSearchRequest);
+
+        // Finding and checking provided locations or just getting a null (default)
+        Location departureLocation = extractLocation(routeSearchRequest.getDepartureLocation());
+        Location arrivalLocation = extractLocation(routeSearchRequest.getArrivalLocation());
+
+        // If that's a single dates request
+        if (routeSearchRequest.getFetchDays() > 0) {
             routeSearchRequest.setDepartureTimeMax(OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMin())
                     .truncatedTo(ChronoUnit.DAYS)
                     .plusDays(1).toString()
             );
         }
 
+        System.out.println(routeSearchRequest.toString());
+
         // Querying
         return routeRepository.findAllByRequest(
-                departureLocationFinal,
-                arrivalLocationFinal,
+                departureLocation,
+                arrivalLocation,
+                OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMin()),
+                OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMax()),
+                routeSearchRequest.getMaxTravelDuration(),
+                transportTypes,
+                routeSearchRequest.getMinPrice(),
+                routeSearchRequest.getMaxPrice(),
+                PageRequest.of(0, Math.min(100, routeSearchRequest.getAmountLimit()))
+        );
+    }
+
+    public List<String> findDatesForRequest(RouteSearchRequest routeSearchRequest) {
+        // Finding and checking provided transport types;
+        List<TransportType> transportTypes = extractTransportTypes(routeSearchRequest);
+
+        // Finding and checking provided locations or just getting a null (default)
+        Location departureLocation = extractLocation(routeSearchRequest.getDepartureLocation());
+        Location arrivalLocation = extractLocation(routeSearchRequest.getArrivalLocation());
+
+        routeSearchRequest.setDepartureTimeMax(
+                OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMin())
+                        .plusDays(routeSearchRequest.getFetchDays())
+                        .toString()
+        );
+
+        // Querying
+        return routeRepository.findAllDatesByRequest(
+                departureLocation,
+                arrivalLocation,
                 OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMin()),
                 OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMax()),
                 routeSearchRequest.getMaxTravelDuration(),

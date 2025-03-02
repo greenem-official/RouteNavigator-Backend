@@ -211,8 +211,8 @@ public class MainRestController {
         try {
             OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMin());
             OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMax());
-        } catch (DateTimeParseException e) {
-            return new ResponseEntity<>(new ErrorResponse("Invalid time format"), HttpStatus.BAD_REQUEST);
+        } catch (NullPointerException | DateTimeParseException e) {
+            return new ResponseEntity<>(new ErrorResponse("invalid_time_format"), HttpStatus.BAD_REQUEST);
         }
 
 //        if (routeSearchRequest.isThisDateOnly()) {
@@ -230,6 +230,11 @@ public class MainRestController {
 ////                routeSearchRequest.setDepartureTimeMax(maxTechnicallyAllowedDepartureTime);
 ////            }
 //        }
+
+        if(routeSearchRequest.getFetchDays() > 0 && routeSearchRequest.isFetchAvailability()) {
+            List<String> dates = routeService.findDatesForRequest(routeSearchRequest);
+            return new ResponseEntity<>(dates, HttpStatus.OK);
+        }
         try {
             List<Route> routes = routeService.findAllByRequest(routeSearchRequest);
             return new ResponseEntity<>(routes, HttpStatus.OK);
