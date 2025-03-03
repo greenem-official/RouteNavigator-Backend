@@ -279,7 +279,7 @@ public class MainRestController {
         return new ResponseEntity<>(new MessageResponse("booking_modification_success"), HttpStatus.OK);
     }
 
-    @GetMapping(value = "/getBookings", consumes = "application/json")
+    @GetMapping(value = "/getBookings")
     public ResponseEntity<?> getAllBookings(@RequestHeader("Authorization") String authHeader) {
         Pair<Token, ResponseEntity<?>> tokenResult = TokenManager.findToken(authHeader);
         if(tokenResult.getValue1() != null) return tokenResult.getValue1();

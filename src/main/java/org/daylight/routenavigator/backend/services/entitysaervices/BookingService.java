@@ -24,7 +24,7 @@ public class BookingService {
     }
 
     public List<Booking> findAllByUser(User user) {
-        return bookingRepository.findAllByUser(user);
+        return bookingRepository.findAllByUserOrderByBookedAtDesc(user);
     }
 
     public List<Booking> findAllByRoute(Route route) {

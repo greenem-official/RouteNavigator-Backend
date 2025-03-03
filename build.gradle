@@ -39,7 +39,8 @@ dependencies {
 
 	implementation 'org.javatuples:javatuples:1.2' // java tuples
 
-//	implementation 'org.xerial:sqlite-jdbc:3.49.0.0' // sqlite
+	// Database Type:
+	implementation 'org.xerial:sqlite-jdbc:3.49.0.0' // sqlite
 	implementation 'org.postgresql:postgresql:42.7.5' // postgresql
 
 	implementation "org.hibernate.validator:hibernate-validator:8.0.1.Final"

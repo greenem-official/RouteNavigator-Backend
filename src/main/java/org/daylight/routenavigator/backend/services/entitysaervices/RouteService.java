@@ -1,20 +1,35 @@
 package org.daylight.routenavigator.backend.services.entitysaervices;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
+import org.daylight.routenavigator.backend.components.SpringContextHolder;
 import org.daylight.routenavigator.backend.entities.Location;
 import org.daylight.routenavigator.backend.entities.Route;
 import org.daylight.routenavigator.backend.entities.TransportType;
 import org.daylight.routenavigator.backend.model.incoming.RouteSearchRequest;
 import org.daylight.routenavigator.backend.repositories.RouteRepository;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Environment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class RouteService {
@@ -111,7 +126,7 @@ public class RouteService {
             );
         }
 
-        System.out.println(routeSearchRequest.toString());
+//        System.out.println(routeSearchRequest.toString());
 
         // Querying
         return routeRepository.findAllByRequest(
@@ -141,17 +156,87 @@ public class RouteService {
                         .toString()
         );
 
-        // Querying
-        return routeRepository.findAllDatesByRequest(
-                departureLocation,
-                arrivalLocation,
-                OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMin()),
-                OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMax()),
-                routeSearchRequest.getMaxTravelDuration(),
-                transportTypes,
-                routeSearchRequest.getMinPrice(),
-                routeSearchRequest.getMaxPrice(),
-                PageRequest.of(0, Math.min(100, routeSearchRequest.getAmountLimit()))
-        );
+        boolean postgresql = false;
+
+        try {
+            postgresql = isPostgreSQL();
+        } catch (SQLException e) {
+            System.out.println("Couldn't determine database type");
+        }
+
+        // Querying, different methods for SQLite and PostgreSQL due to different sql syntax
+        List<String> result;
+        if(postgresql) {
+            result = routeRepository.findAllDatesByRequestPostgres(
+                    departureLocation,
+                    arrivalLocation,
+                    OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMin()),
+                    OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMax()),
+                    routeSearchRequest.getMaxTravelDuration(),
+                    transportTypes,
+                    routeSearchRequest.getMinPrice(),
+                    routeSearchRequest.getMaxPrice(),
+                    PageRequest.of(0, Math.min(100, routeSearchRequest.getAmountLimit()))
+            );
+        } else {
+            // IMPORTANT EXPLANATION:
+            // Sqlite had a lot of problems selecting distinct formatted dates, so we have to do it here and even modify the limit size.
+            // The entire SQLITE version is NOT SUPPOSED TO BE USED (!!!) in production instead of postgresql.
+            // it's just hard to determine if the given task allows postgresql
+            List<OffsetDateTime> dates = routeRepository.findAllDatesByRequestSqlite(
+                    departureLocation,
+                    arrivalLocation,
+                    OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMin()),
+                    OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMax()),
+                    routeSearchRequest.getMaxTravelDuration(),
+                    transportTypes,
+                    routeSearchRequest.getMinPrice(),
+                    routeSearchRequest.getMaxPrice(),
+                    PageRequest.of(0, 500)
+            );
+
+//            System.out.println(dates);
+
+            result = dates.stream()
+                    .map(timestamp -> timestamp.format(findDatesFormatter))
+                    .distinct()
+                    .collect(Collectors.toList());
+        }
+
+//        System.out.println(result);
+        return result;
+    }
+
+    private DateTimeFormatter findDatesFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    private static Optional<Boolean> isPostgreSQL = Optional.empty();
+
+    public boolean isPostgreSQL() throws SQLException {
+        if(isPostgreSQL.isPresent()) {
+            return isPostgreSQL.get();
+        }
+
+        boolean result = false;
+        try {
+            DatabaseMetaData metaData = Objects.requireNonNull(jdbcTemplate.getDataSource())
+                    .getConnection()
+                    .getMetaData();
+
+//            System.out.println("Database Product Name: " + metaData.getDatabaseProductName());
+//            System.out.println("Database Product Version: " + metaData.getDatabaseProductVersion());
+//            System.out.println("Driver Name: " + metaData.getDriverName());
+//            System.out.println("Driver Version: " + metaData.getDriverVersion());
+//            System.out.println("URL: " + metaData.getURL());
+//            System.out.println("User Name: " + metaData.getUserName());
+            result = metaData.getDatabaseProductName().equalsIgnoreCase("postgresql");
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to retrieve database metadata", e);
+        }
+
+        isPostgreSQL = Optional.of(result);
+        return isPostgreSQL.get();
     }
 }
