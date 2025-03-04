@@ -92,14 +92,14 @@ public class MainRestController {
         // Looking for a registered user with the same email
         Optional<User> user = userService.findByEmail(registrationFormRequest.getEmail());
         if (user.isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
+            return ResponseEntity.status(HttpStatus.OK)
                     .body(new ErrorResponse("email_already_registered"));
         }
 
         // Looking for a registered user with the same email
         Optional<User> userByName = userService.findByUsername(registrationFormRequest.getUsername());
         if (userByName.isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
+            return ResponseEntity.status(HttpStatus.OK)
                     .body(new ErrorResponse("username_already_registered"));
         }
 
@@ -134,7 +134,7 @@ public class MainRestController {
      * @param tokenCheckRequest The request data
      * @return The token info or an error
      */
-    @GetMapping(value = "/checkToken", consumes = "application/json")
+    @PostMapping(value = "/checkToken", consumes = "application/json")
     public ResponseEntity<?> checkToken(@Valid @RequestBody TokenCheckRequest tokenCheckRequest) {
         Pair<Token, ResponseEntity<?>> tokenResult = TokenManager.findToken(tokenCheckRequest.getToken());
         if (tokenResult.getValue1() != null) return tokenResult.getValue1();
@@ -274,7 +274,11 @@ public class MainRestController {
         if(booking.get().getUser().getId() != token.getUser().getId()) return new ResponseEntity<>(new ErrorResponse("booking_not_available"), HttpStatus.UNAUTHORIZED);
 
         booking.get().setTicketAmount(modifyRouteBookingRequest.getSetTicketsAmount());
-        bookingService.save(booking.get());
+        if(booking.get().getTicketAmount() == 0) {
+            bookingService.delete(booking.get());
+        } else {
+            bookingService.save(booking.get());
+        }
 
         return new ResponseEntity<>(new MessageResponse("booking_modification_success"), HttpStatus.OK);
     }

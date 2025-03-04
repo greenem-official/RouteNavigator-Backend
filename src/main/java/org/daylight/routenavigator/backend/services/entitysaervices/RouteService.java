@@ -56,28 +56,20 @@ public class RouteService {
         return routeRepository.findById(id);
     }
 
-    public List<Route> findAllByDepartureLocation(Location departureLocation) {
-        return routeRepository.findAllByDepartureLocation(departureLocation);
-    }
-
-    public List<Route> findAllByArrivalLocation(Location arrivalLocation) {
-        return routeRepository.findAllByArrivalLocation(arrivalLocation);
-    }
-
     public List<Route> findAllByDepartureTimeAfter(OffsetDateTime departureTime) {
-        return routeRepository.findAllByDepartureTimeAfter(departureTime);
+        return routeRepository.findAllByDepartureTimeAfter(departureTime, OffsetDateTime.now());
     }
 
     public List<Route> findAllByArrivalTimeAfter(OffsetDateTime arrivalTime) {
-        return routeRepository.findAllByArrivalTimeAfter(arrivalTime);
+        return routeRepository.findAllByArrivalTimeAfter(arrivalTime, OffsetDateTime.now());
     }
 
     public List<Route> findAllByDepartureLocationAndDepartureTimeAfter(Location departureLocation, OffsetDateTime departureTime) {
-        return routeRepository.findAllByDepartureLocationAndDepartureTimeAfter(departureLocation, departureTime);
+        return routeRepository.findAllByDepartureLocationAndDepartureTimeAfter(departureLocation, departureTime, OffsetDateTime.now());
     }
 
     public List<Route> findAllByArrivalLocationAndArrivalTimeBefore(Location arrivalLocation, OffsetDateTime arrivalTime) {
-        return routeRepository.findAllByArrivalLocationAndArrivalTimeBefore(arrivalLocation, arrivalTime);
+        return routeRepository.findAllByArrivalLocationAndArrivalTimeBefore(arrivalLocation, arrivalTime, OffsetDateTime.now());
     }
 
     private List<TransportType> extractTransportTypes(RouteSearchRequest routeSearchRequest) {
@@ -138,6 +130,7 @@ public class RouteService {
                 transportTypes,
                 routeSearchRequest.getMinPrice(),
                 routeSearchRequest.getMaxPrice(),
+                OffsetDateTime.now(),
                 PageRequest.of(0, Math.min(100, routeSearchRequest.getAmountLimit()))
         );
     }
@@ -176,6 +169,7 @@ public class RouteService {
                     transportTypes,
                     routeSearchRequest.getMinPrice(),
                     routeSearchRequest.getMaxPrice(),
+                    OffsetDateTime.now(),
                     PageRequest.of(0, Math.min(100, routeSearchRequest.getAmountLimit()))
             );
         } else {
@@ -192,6 +186,7 @@ public class RouteService {
                     transportTypes,
                     routeSearchRequest.getMinPrice(),
                     routeSearchRequest.getMaxPrice(),
+                    OffsetDateTime.now(),
                     PageRequest.of(0, 500)
             );
 

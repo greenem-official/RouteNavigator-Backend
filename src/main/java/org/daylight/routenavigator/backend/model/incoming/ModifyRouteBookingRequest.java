@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.hibernate.validator.constraints.Range;
 
 @Data
 @Accessors(chain = true)
@@ -14,5 +15,6 @@ public class ModifyRouteBookingRequest {
     private long bookingId;
 
     @NotNull
+    @Range(min = 0, max = 100)
     private int setTicketsAmount;
 }

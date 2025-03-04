@@ -16,27 +16,52 @@ import java.util.List;
 
 @Repository
 public interface RouteRepository extends CrudRepository<Route, Long> {
-    List<Route> findAllByDepartureLocation(Location departureLocation);
+    @Query("SELECT r FROM Route r WHERE " +
+            "r.departureTime >= :departureTime " +
+            "AND r.departureTime >= :currentTime " +
+            "ORDER BY r.departureTime ASC")
+    List<Route> findAllByDepartureTimeAfter(
+            @Param("departureTime") OffsetDateTime departureTime,
+            @Param("currentTime") OffsetDateTime currentTime
+    );
 
-    List<Route> findAllByArrivalLocation(Location arrivalLocation);
+    @Query("SELECT r FROM Route r WHERE " +
+            "r.arrivalTime >= :arrivalTime " +
+            "AND r.departureTime >= :currentTime " +
+            "ORDER BY r.arrivalTime ASC")
+    List<Route> findAllByArrivalTimeAfter(
+            @Param("arrivalTime") OffsetDateTime arrivalTime,
+            @Param("currentTime") OffsetDateTime currentTime
+    );
 
-    @Query("SELECT r FROM Route r WHERE r.departureTime >= :departureTime ORDER BY r.departureTime ASC")
-    List<Route> findAllByDepartureTimeAfter(OffsetDateTime departureTime);
+    @Query("SELECT r FROM Route r WHERE " +
+            "r.departureLocation = :departureLocation " +
+            "AND r.departureTime >= :departureTime " +
+            "AND r.departureTime >= :currentTime " +
+            "ORDER BY r.departureTime ASC")
+    List<Route> findAllByDepartureLocationAndDepartureTimeAfter(
+            @Param("departureLocation") Location departureLocation,
+            @Param("departureTime") OffsetDateTime departureTime,
+            @Param("currentTime") OffsetDateTime currentTime
+    );
 
-    @Query("SELECT r FROM Route r WHERE r.arrivalTime >= :arrivalTime ORDER BY r.arrivalTime ASC")
-    List<Route> findAllByArrivalTimeAfter(OffsetDateTime arrivalTime);
-
-    @Query("SELECT r FROM Route r WHERE r.departureLocation = :departureLocation and r.departureTime >= :departureTime ORDER BY r.departureTime ASC")
-    List<Route> findAllByDepartureLocationAndDepartureTimeAfter(Location departureLocation, OffsetDateTime departureTime);
-
-    @Query("SELECT r FROM Route r WHERE r.arrivalLocation = :arrivalLocation and r.arrivalTime <= :arrivalTime ORDER BY r.departureTime ASC")
-    List<Route> findAllByArrivalLocationAndArrivalTimeBefore(Location arrivalLocation, OffsetDateTime arrivalTime);
+    @Query("SELECT r FROM Route r WHERE " +
+            "r.arrivalLocation = :arrivalLocation " +
+            "AND r.arrivalTime <= :arrivalTime " +
+            "AND r.departureTime >= :currentTime " +
+            "ORDER BY r.departureTime ASC")
+    List<Route> findAllByArrivalLocationAndArrivalTimeBefore(
+            @Param("arrivalLocation") Location arrivalLocation,
+            @Param("arrivalTime") OffsetDateTime arrivalTime,
+            @Param("currentTime") OffsetDateTime currentTime
+    );
 
     @Query("SELECT r " +
-            "FROM Route r " +
-            "WHERE (:departureLocation IS NULL OR r.departureLocation = :departureLocation) " +
+            "FROM Route r WHERE " +
+            "(:departureLocation IS NULL OR r.departureLocation = :departureLocation) " +
             "AND (:arrivalLocation IS NULL OR r.arrivalLocation = :arrivalLocation) " +
             "AND r.departureTime BETWEEN :departureTimeMin AND :departureTimeMax " +
+            "AND r.departureTime >= :currentTime " +
             "AND r.transportType IN :transportAllowed " +
             "AND r.price BETWEEN :minPrice AND :maxPrice " +
             "ORDER BY r.departureTime ASC")
@@ -49,13 +74,15 @@ public interface RouteRepository extends CrudRepository<Route, Long> {
             @Param("transportAllowed") List<TransportType> transportAllowed,
             @Param("minPrice") int minPrice,
             @Param("maxPrice") int maxPrice,
+            @Param("currentTime") OffsetDateTime currentTime,
             Pageable pageable);
 
     @Query(value = "SELECT DISTINCT TO_CHAR(DATE_TRUNC('day', r.departureTime), 'YYYY-MM-DD') " +
-            "FROM Route r " +
-            "WHERE (:departureLocation IS NULL OR r.departureLocation = :departureLocation) " +
+            "FROM Route r WHERE " +
+            "(:departureLocation IS NULL OR r.departureLocation = :departureLocation) " +
             "AND (:arrivalLocation IS NULL OR r.arrivalLocation = :arrivalLocation) " +
             "AND r.departureTime BETWEEN :departureTimeMin AND :departureTimeMax " +
+            "AND r.departureTime >= :currentTime " +
             "AND r.transportType IN :transportAllowed " +
             "AND r.price BETWEEN :minPrice AND :maxPrice")
     List<String> findAllDatesByRequestPostgres(
@@ -67,13 +94,15 @@ public interface RouteRepository extends CrudRepository<Route, Long> {
                                        @Param("transportAllowed") List<TransportType> transportAllowed,
                                        @Param("minPrice") int minPrice,
                                        @Param("maxPrice") int maxPrice,
+                                       @Param("currentTime") OffsetDateTime currentTime,
                                        Pageable pageable);
 
     @Query(value = "SELECT DISTINCT r.departureTime " +
-            "FROM Route r " +
-            "WHERE (:departureLocation IS NULL OR r.departureLocation = :departureLocation) " +
+            "FROM Route r WHERE " +
+            "(:departureLocation IS NULL OR r.departureLocation = :departureLocation) " +
             "AND (:arrivalLocation IS NULL OR r.arrivalLocation = :arrivalLocation) " +
             "AND r.departureTime BETWEEN :departureTimeMin AND :departureTimeMax " +
+            "AND r.departureTime >= :currentTime " +
             "AND r.transportType IN :transportAllowed " +
             "AND r.price BETWEEN :minPrice AND :maxPrice")
     List<OffsetDateTime> findAllDatesByRequestSqlite(
@@ -85,5 +114,6 @@ public interface RouteRepository extends CrudRepository<Route, Long> {
                                        @Param("transportAllowed") List<TransportType> transportAllowed,
                                        @Param("minPrice") int minPrice,
                                        @Param("maxPrice") int maxPrice,
+                                       @Param("currentTime") OffsetDateTime currentTime,
                                        Pageable pageable);
 }

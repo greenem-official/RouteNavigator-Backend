@@ -14,10 +14,10 @@ public class LoginFormRequest {
     @NotNull
     private String email;
 
-    @Size(min = 6, max = 25)
+    @Size(min = 5, max = 25)
     private String username;
 
     @NotNull
-    @Size(min = 6, max = 25)
+    @Size(min = 5, max = 25)
     private String password;
 }

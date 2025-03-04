@@ -29,13 +29,15 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 //	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
-	compileOnly 'org.projectlombok:lombok'
+
 //	implementation 'com.mysql:mysql-connector-j:9.2.0'
 	implementation 'org.hibernate.orm:hibernate-community-dialects:6.6.1.Final'
-	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	implementation 'org.projectlombok:lombok' // not compileOnly for idea community edition
+	annotationProcessor 'org.projectlombok:lombok'
 
 	implementation 'org.javatuples:javatuples:1.2' // java tuples
 
