@@ -8,8 +8,6 @@ import org.daylight.routenavigator.backend.model.outcoming.ErrorResponse;
 import org.daylight.routenavigator.backend.model.outcoming.MessageResponse;
 import org.daylight.routenavigator.backend.model.outcoming.TokenResponse;
 import org.daylight.routenavigator.backend.services.entitysaervices.*;
-import org.daylight.routenavigator.backend.services.generalservices.Dijkstra3_2;
-import org.daylight.routenavigator.constants.TimeContstants;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -48,7 +46,7 @@ public class MainRestController {
     /**
      * A login endpoint
      * @param loginFormRequest The login form data
-     * @return A new token info or an error
+     * @return A new token info or an ErrorResponse
      */
     @PostMapping(value = "/login", consumes = "application/json")
     public ResponseEntity<?> login(@Valid @RequestBody LoginFormRequest loginFormRequest) {
@@ -81,7 +79,7 @@ public class MainRestController {
     /**
      * A registration endpoint
      * @param registrationFormRequest The registration form data
-     * @return A new token info or an error
+     * @return A new token info or an ErrorResponse
      */
     @PostMapping(value = "/register", consumes = "application/json")
     public ResponseEntity<?> register(@Valid @RequestBody LoginFormRequest registrationFormRequest) {
@@ -132,7 +130,7 @@ public class MainRestController {
     /**
      * An endpoint for checking the token and getting user information
      * @param tokenCheckRequest The request data
-     * @return The token info or an error
+     * @return The token info or an ErrorResponse
      */
     @PostMapping(value = "/checkToken", consumes = "application/json")
     public ResponseEntity<?> checkToken(@Valid @RequestBody TokenCheckRequest tokenCheckRequest) {
@@ -147,63 +145,10 @@ public class MainRestController {
         }
     }
 
-    @GetMapping(value = "/test")
-    public ResponseEntity<?> test() {
-//        System.out.println(Arrays.toString(routeService.findAllByDepartureLocation(locationService.findByCode("location_msk").get()).toArray()));
-//        return new ResponseEntity<String>(userService.findUserFromToken())
-
-        List<Route> routes = routeService.findAllByDepartureLocationAndDepartureTimeAfter(
-                locationService.findByCode("rostov-on-don").get(),
-                OffsetDateTime.parse("2025-03-22 07:00:00+03:00", TimeContstants.formatter)
-        );
-
-        System.out.println("Options:");
-        for (Route route : routes) {
-            System.out.println(route.getDepartureLocation().getDisplayName() + " - " + route.getArrivalLocation().getDisplayName());
-        }
-
-//        Dijkstra2 dijkstra = new Dijkstra2(routeService);
-//
-//        List<Path> shortestPaths = dijkstra.findShortestPaths(
-//                locationService.findByCode("msk").get(),
-//                locationService.findByCode("novosibirsk").get(),
-//                OffsetDateTime.parse("2025-03-20 10:30:00+03:00", TimeContstants.formatter)
-//        );
-//
-//        for (Path path : shortestPaths) {
-//            System.out.println("Path with total time " + path.getTotalTime() + ": (" + path.getLocations().size() + " locations)");
-//            for(Location location : path.getLocations()) {
-//                System.out.print(location.getDisplayName() + " ");
-//            }
-//        }
-
-//        System.out.println();
-
-        Location startNode = locationService.findByCode("msk").get();
-        Location endNode = locationService.findByCode("novosibirsk").get();
-        OffsetDateTime startTime = OffsetDateTime.parse("2025-03-20 10:30:00+03:00", TimeContstants.formatter);
-        int K = 5;
-
-        Dijkstra3_2.setRouteService(routeService);
-        List<Dijkstra3_2.Path> result = Dijkstra3_2.temporalDijkstraK(startNode, endNode, startTime, K);
-
-        if (!result.isEmpty()) {
-            System.out.println("Best paths to " + endNode + ":");
-            for (Dijkstra3_2.Path path : result) {
-                System.out.println(path);
-                System.out.println();
-            }
-        } else {
-            System.out.println("Path from " + startNode + " to " + endNode + " wasn't found.");
-        }
-
-        return new ResponseEntity<>(new MessageResponse("test"), HttpStatus.OK);
-    }
-
     /**
      * An endpoint for querying matching routes
      * @param routeSearchRequest The route search request data
-     * @return A list of available routes or an error
+     * @return A list of available routes or an ErrorResponse
      */
     @PostMapping(value = "/findRoutes", consumes = "application/json")
     public ResponseEntity<?> findRoutes(@Valid @RequestBody RouteSearchRequest routeSearchRequest) {
@@ -214,22 +159,6 @@ public class MainRestController {
         } catch (NullPointerException | DateTimeParseException e) {
             return new ResponseEntity<>(new ErrorResponse("invalid_time_format"), HttpStatus.BAD_REQUEST);
         }
-
-//        if (routeSearchRequest.isThisDateOnly()) {
-//            // Single date request
-//            routeSearchRequest.setDepartureTimeMax(routeSearchRequest.getDepartureTimeMin()
-//                    .truncatedTo(ChronoUnit.DAYS)
-//                    .plusDays(1)
-//            );
-//        } else {
-////            // Limiting max search timespan
-////            OffsetDateTime maxTechnicallyAllowedDepartureTime = routeSearchRequest.getDepartureTimeMin()
-////                    .truncatedTo(ChronoUnit.DAYS)
-////                    .plusDays(14);
-////            if (maxTechnicallyAllowedDepartureTime.isBefore(routeSearchRequest.getDepartureTimeMax())) {
-////                routeSearchRequest.setDepartureTimeMax(maxTechnicallyAllowedDepartureTime);
-////            }
-//        }
 
         if(routeSearchRequest.getFetchDays() > 0 && routeSearchRequest.isFetchAvailability()) {
             List<String> dates = routeService.findDatesForRequest(routeSearchRequest);
@@ -244,6 +173,12 @@ public class MainRestController {
         }
     }
 
+    /**
+     * An endpoint for booking a specific route
+     * @param bookRouteRequest Specific request data
+     * @param authHeader Auth data
+     * @return A MessageResponse or an ErrorResponse
+     */
     @PostMapping(value = "/bookRoute", consumes = "application/json")
     public ResponseEntity<?> bookRoute(@Valid @RequestBody BookRouteRequest bookRouteRequest, @RequestHeader("Authorization") String authHeader) {
         Pair<Token, ResponseEntity<?>> tokenResult = TokenManager.findToken(authHeader);
@@ -263,6 +198,12 @@ public class MainRestController {
         return new ResponseEntity<>(new MessageResponse("route_booking_success"), HttpStatus.OK);
     }
 
+    /**
+     * An endpoint for a booking modification request
+     * @param modifyRouteBookingRequest Specific request data
+     * @param authHeader Auth data
+     * @return A MessageResponse or an ErrorResponse
+     */
     @PostMapping(value = "/modifyBooking", consumes = "application/json")
     public ResponseEntity<?> modifyRouteBooking(@Valid @RequestBody ModifyRouteBookingRequest modifyRouteBookingRequest, @RequestHeader("Authorization") String authHeader) {
         Pair<Token, ResponseEntity<?>> tokenResult = TokenManager.findToken(authHeader);
@@ -283,6 +224,11 @@ public class MainRestController {
         return new ResponseEntity<>(new MessageResponse("booking_modification_success"), HttpStatus.OK);
     }
 
+    /**
+     * An endpoint for querying all the user's bookings
+     * @param authHeader Auth data
+     * @return A list of bookings
+     */
     @GetMapping(value = "/getBookings")
     public ResponseEntity<?> getAllBookings(@RequestHeader("Authorization") String authHeader) {
         Pair<Token, ResponseEntity<?>> tokenResult = TokenManager.findToken(authHeader);
