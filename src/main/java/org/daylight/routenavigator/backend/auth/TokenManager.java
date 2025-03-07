@@ -2,18 +2,11 @@ package org.daylight.routenavigator.backend.auth;
 
 import org.daylight.routenavigator.backend.components.SpringContextHolder;
 import org.daylight.routenavigator.backend.entities.Token;
-import org.daylight.routenavigator.backend.entities.User;
 import org.daylight.routenavigator.backend.model.outcoming.ErrorResponse;
-import org.daylight.routenavigator.backend.model.outcoming.MessageResponse;
-import org.daylight.routenavigator.backend.model.outcoming.TokenResponse;
-import org.daylight.routenavigator.backend.services.entitysaervices.TokenService;
-import org.daylight.routenavigator.backend.services.entitysaervices.UserService;
+import org.daylight.routenavigator.backend.services.entityservices.TokenService;
 import org.javatuples.Pair;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

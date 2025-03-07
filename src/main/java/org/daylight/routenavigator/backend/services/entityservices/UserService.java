@@ -1,14 +1,11 @@
-package org.daylight.routenavigator.backend.services.entitysaervices;
+package org.daylight.routenavigator.backend.services.entityservices;
 
-import org.daylight.routenavigator.backend.entities.Token;
 import org.daylight.routenavigator.backend.entities.User;
 import org.daylight.routenavigator.backend.repositories.UserRepository;
-import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class UserService {

@@ -7,7 +7,7 @@ import org.daylight.routenavigator.backend.model.incoming.*;
 import org.daylight.routenavigator.backend.model.outcoming.ErrorResponse;
 import org.daylight.routenavigator.backend.model.outcoming.MessageResponse;
 import org.daylight.routenavigator.backend.model.outcoming.TokenResponse;
-import org.daylight.routenavigator.backend.services.entitysaervices.*;
+import org.daylight.routenavigator.backend.services.entityservices.*;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -161,8 +161,12 @@ public class MainRestController {
         }
 
         if(routeSearchRequest.getFetchDays() > 0 && routeSearchRequest.isFetchAvailability()) {
-            List<String> dates = routeService.findDatesForRequest(routeSearchRequest);
-            return new ResponseEntity<>(dates, HttpStatus.OK);
+            try {
+                List<String> dates = routeService.findDatesForRequest(routeSearchRequest);
+                return new ResponseEntity<>(dates, HttpStatus.OK);
+            } catch (IllegalArgumentException e) {
+                return new ResponseEntity<>(new ErrorResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
+            }
         }
         try {
             List<Route> routes = routeService.findAllByRequest(routeSearchRequest);

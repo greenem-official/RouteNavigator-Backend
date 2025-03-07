@@ -1,4 +1,4 @@
-package org.daylight.routenavigator.backend.services.entitysaervices;
+package org.daylight.routenavigator.backend.services.entityservices;
 
 import org.daylight.routenavigator.backend.entities.Booking;
 import org.daylight.routenavigator.backend.entities.Route;

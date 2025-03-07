@@ -1,4 +1,4 @@
 .git
-build
 out
 .gradle
+gradle.properties

@@ -2,11 +2,9 @@ package org.daylight.routenavigator.testdata;
 
 import org.daylight.routenavigator.backend.entities.Location;
 import org.daylight.routenavigator.backend.entities.Route;
-import org.daylight.routenavigator.backend.services.entitysaervices.LocationService;
-import org.daylight.routenavigator.backend.services.entitysaervices.RouteService;
-import org.daylight.routenavigator.backend.services.entitysaervices.TransportTypeService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.daylight.routenavigator.backend.services.entityservices.LocationService;
+import org.daylight.routenavigator.backend.services.entityservices.RouteService;
+import org.daylight.routenavigator.backend.services.entityservices.TransportTypeService;
 
 import java.time.OffsetDateTime;
 import java.util.*;

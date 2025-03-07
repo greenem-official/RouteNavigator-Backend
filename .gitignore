@@ -19,6 +19,10 @@ bin/
 
 ### IntelliJ IDEA ###
 .idea
+.idea/dataSources*
+.idea/httpRequests*
+.idea/sqldialects.xml
+.idea/uiDesigner.xml
 *.iws
 *.iml
 *.ipr

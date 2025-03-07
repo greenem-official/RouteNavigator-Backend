@@ -1,11 +1,10 @@
-package org.daylight.routenavigator.backend.services.entitysaervices;
+package org.daylight.routenavigator.backend.services.entityservices;
 
 import org.daylight.routenavigator.backend.entities.Location;
 import org.daylight.routenavigator.backend.entities.TransportType;
 import org.daylight.routenavigator.backend.repositories.TransportTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -1,28 +1,18 @@
-package org.daylight.routenavigator.backend.services.entitysaervices;
+package org.daylight.routenavigator.backend.services.entityservices;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.Query;
-import org.daylight.routenavigator.backend.components.SpringContextHolder;
 import org.daylight.routenavigator.backend.entities.Location;
 import org.daylight.routenavigator.backend.entities.Route;
 import org.daylight.routenavigator.backend.entities.TransportType;
 import org.daylight.routenavigator.backend.model.incoming.RouteSearchRequest;
 import org.daylight.routenavigator.backend.repositories.RouteRepository;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Environment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
