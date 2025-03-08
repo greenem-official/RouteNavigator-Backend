@@ -47,15 +47,15 @@ public class TokenService {
         if (user.isEmpty()) {
             return Optional.empty();
         }
-        return generateToken(user.get());
+        return Optional.of(generateToken(user.get()));
     }
 
-    public Optional<Token> generateToken(User user) {
+    public Token generateToken(User user) {
         OffsetDateTime expires = OffsetDateTime.now().plusDays(7);
         return generateToken(user, expires);
     }
 
-    public Optional<Token> generateToken(User user, OffsetDateTime expires) {
+    public Token generateToken(User user, OffsetDateTime expires) {
         int batchSize = 100;
         List<UUID> uniqueTokens = new ArrayList<>();
 
@@ -74,7 +74,7 @@ public class TokenService {
                 .setToken(uniqueToken)
                 .setExpires(expires);
         tokenRepository.save(token);
-        return Optional.of(token);
+        return token;
     }
 
     public boolean checkTokenActive(Token token) {

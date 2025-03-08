@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import static org.daylight.routenavigator.constants.TimeContstants.formatter;
+import static org.daylight.routenavigator.constants.TimeConstants.formatter;
 
 import java.time.OffsetDateTime;
 import java.util.List;

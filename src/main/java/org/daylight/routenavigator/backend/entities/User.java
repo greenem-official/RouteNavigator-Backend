@@ -20,7 +20,7 @@ public class User {
     private String email;
 
     @Column(nullable = false, unique = false)
-    private String password;
+    private String passwordHash;
 
     @Column(nullable = true, unique = true)
     private String username;

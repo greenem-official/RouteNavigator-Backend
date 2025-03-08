@@ -1,6 +1,7 @@
 package org.daylight.routenavigator.backend.controllers;
 
 import jakarta.validation.Valid;
+import org.daylight.routenavigator.backend.auth.HashManager;
 import org.daylight.routenavigator.backend.auth.TokenManager;
 import org.daylight.routenavigator.backend.entities.*;
 import org.daylight.routenavigator.backend.model.incoming.*;
@@ -51,26 +52,22 @@ public class MainRestController {
     @PostMapping(value = "/login", consumes = "application/json")
     public ResponseEntity<?> login(@Valid @RequestBody LoginFormRequest loginFormRequest) {
         // Looking for a matching registered user
-        Optional<User> userIfCorrect = userService.findByEmailAndPassword(loginFormRequest.getEmail(), loginFormRequest.getPassword());
+        Optional<User> userIfCorrect = userService.findByEmail(loginFormRequest.getEmail());
 
-        // If email and password didn't match any account
-        if (userIfCorrect.isEmpty()) {
-            Optional<User> userIfRegistered = userService.findByEmail(loginFormRequest.getEmail());
+        // If no user was found
+        if(userIfCorrect.isEmpty()) return new ResponseEntity<>(new ErrorResponse("user_not_found"), HttpStatus.OK);
 
-            // The provided password is wrong
-            if (userIfRegistered.isPresent()) return new ResponseEntity<>(new ErrorResponse("wrong_password"), HttpStatus.OK);
+        // Checking the password hash
+        boolean passwordMatch;
+        passwordMatch = HashManager.validatePassword(loginFormRequest.getPassword(), userIfCorrect.get().getPasswordHash());
 
-            // The user is not even registered
-            return new ResponseEntity<>(new ErrorResponse("user_not_found"), HttpStatus.OK);
-        }
+        // If the password is wrong
+        if(!passwordMatch) return new ResponseEntity<>(new ErrorResponse("wrong_password"), HttpStatus.OK);
 
-        // Generating a token and sending the result
-        Optional<Token> newToken = tokenService.generateToken(userIfCorrect.get());
-        if (newToken.isEmpty()) {
-            return new ResponseEntity<>(new ErrorResponse("invalid_token"), HttpStatus.OK);
-        }
+        // Generating a new token and sending the result
+        Token newToken = tokenService.generateToken(userIfCorrect.get());
 
-        return new ResponseEntity<>(new TokenResponse(newToken.get())
+        return new ResponseEntity<>(new TokenResponse(newToken)
                 .setUserUsername(userIfCorrect.get().getUsername())
                 .setUserEmail(userIfCorrect.get().getEmail())
                 , HttpStatus.OK);
@@ -105,7 +102,7 @@ public class MainRestController {
         User newUser = new User()
                 .setEmail(registrationFormRequest.getEmail())
                 .setUsername(registrationFormRequest.getUsername())
-                .setPassword(registrationFormRequest.getPassword());
+                .setPasswordHash(HashManager.hashPassword(registrationFormRequest.getPassword()));
 
         try {
             userService.save(newUser);
@@ -115,13 +112,10 @@ public class MainRestController {
             return new ResponseEntity<>(new ErrorResponse("internal_error"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        // Generating a token and sending the result
-        Optional<Token> newToken = tokenService.generateToken(newUser);
-        if (newToken.isEmpty()) {
-            return new ResponseEntity<>(new ErrorResponse("invalid_token"), HttpStatus.OK);
-        }
+        // Generating a new token and sending the result
+        Token newToken = tokenService.generateToken(newUser);
 
-        return new ResponseEntity<>(new TokenResponse(newToken.get())
+        return new ResponseEntity<>(new TokenResponse(newToken)
                 .setUserUsername(newUser.getUsername())
                 .setUserEmail(newUser.getEmail())
                 , HttpStatus.OK);
@@ -168,6 +162,9 @@ public class MainRestController {
                 return new ResponseEntity<>(new ErrorResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
             }
         }
+//        else if(routeSearchRequest.getFetchDays() < 0 && routeSearchRequest.getDepartureTimeMin()) {
+//
+//        }
         try {
             List<Route> routes = routeService.findAllByRequest(routeSearchRequest);
             return new ResponseEntity<>(routes, HttpStatus.OK);
