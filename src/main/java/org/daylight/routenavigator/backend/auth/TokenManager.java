@@ -12,8 +12,16 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * A class for handling token validation
+ */
 @Service
 public class TokenManager {
+    /**
+     * Find token by string form
+     * @param token Token
+     * @return The possibly null token object and a possibly null error
+     */
     public static Pair<Token, ResponseEntity<?>> findToken(String token) {
         // Parsing the UUID object
         UUID uuid;

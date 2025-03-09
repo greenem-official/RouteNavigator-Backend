@@ -3,6 +3,9 @@ package org.daylight.routenavigator.backend.auth;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+/**
+ * A class for handling all password hashing and validation
+ */
 public class HashManager {
     private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 

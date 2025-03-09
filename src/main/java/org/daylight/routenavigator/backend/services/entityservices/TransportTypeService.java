@@ -31,7 +31,7 @@ public class TransportTypeService {
         return transportTypeRepository.findByDisplayName(displayName);
     }
 
-    public List<Location> findMatching(String text, int limit) {
+    public List<TransportType> findMatching(String text, int limit) {
         return transportTypeRepository.findByDisplayNameStartingWith(text, PageRequest.of(0, limit));
     }
 }

@@ -15,6 +15,10 @@ public class UserService {
     @Autowired
     private TokenService tokenService;
 
+    public void delete(User user) {
+        userRepository.delete(user);
+    }
+
     public void save(User user) {
         userRepository.save(user);
     }

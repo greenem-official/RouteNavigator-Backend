@@ -19,6 +19,10 @@ public class TokenService {
     @Autowired
     private TokenRepository tokenRepository;
 
+    public void delete(Token token) {
+        tokenRepository.delete(token);
+    }
+
     public void save(Token token) {
         tokenRepository.save(token);
     }
@@ -55,6 +59,12 @@ public class TokenService {
         return generateToken(user, expires);
     }
 
+    /**
+     * A function that generates a new token that is guaranteed to be not used yet
+     * @param user The user
+     * @param expires An expiration date
+     * @return A token object
+     */
     public Token generateToken(User user, OffsetDateTime expires) {
         int batchSize = 100;
         List<UUID> uniqueTokens = new ArrayList<>();

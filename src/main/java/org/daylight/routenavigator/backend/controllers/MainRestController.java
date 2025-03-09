@@ -70,7 +70,7 @@ public class MainRestController {
         return new ResponseEntity<>(new TokenResponse(newToken)
                 .setUserUsername(userIfCorrect.get().getUsername())
                 .setUserEmail(userIfCorrect.get().getEmail())
-                , HttpStatus.OK);
+                , HttpStatus.CREATED);
     }
 
     /**
