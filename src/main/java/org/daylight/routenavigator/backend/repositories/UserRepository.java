@@ -7,6 +7,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+/**
+ * A repository for Users
+ */
 @Repository
 public interface UserRepository extends CrudRepository<User, Long> {
 //    @Query("SELECT u FROM User u WHERE u.email = :email AND u.password = :password")

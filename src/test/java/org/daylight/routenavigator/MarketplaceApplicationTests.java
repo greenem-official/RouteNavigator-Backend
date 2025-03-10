@@ -16,6 +16,9 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+/**
+ * The main class for the application tests
+ */
 @SpringBootTest(classes = MarketplaceApplication.class, properties = {
 		"spring.profiles.active=postgresql",
 })

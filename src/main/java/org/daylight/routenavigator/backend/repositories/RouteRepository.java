@@ -14,6 +14,9 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+/**
+ * A repository for Routes
+ */
 @Repository
 public interface RouteRepository extends CrudRepository<Route, Long> {
     @Query("SELECT r FROM Route r WHERE " +

@@ -8,6 +8,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * A repository for Bookings
+ */
 @Repository
 public interface BookingRepository extends CrudRepository<Booking, Long> {
     List<Booking> findAllByUserOrderByBookedAtDesc(User user);

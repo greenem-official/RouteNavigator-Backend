@@ -8,6 +8,9 @@ import org.daylight.routenavigator.backend.entities.Token;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+/**
+ * An outcoming structure representing a response including the user's current authorization data
+ */
 @Data
 @Accessors(chain = true)
 @AllArgsConstructor

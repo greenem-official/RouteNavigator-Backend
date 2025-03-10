@@ -9,6 +9,9 @@ import lombok.experimental.Accessors;
 
 import java.time.OffsetDateTime;
 
+/**
+ * A booking database entity
+ */
 @Data
 @Entity
 @Table(name = "bookings")

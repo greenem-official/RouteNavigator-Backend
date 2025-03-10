@@ -21,6 +21,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * A service for the Routes repository
+ */
 @Service
 public class RouteService {
     @Autowired

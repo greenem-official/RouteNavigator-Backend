@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.Accessors;
 
+/**
+ * A user database entity
+ */
 @Data
 @Entity
 @Table(name = "users")

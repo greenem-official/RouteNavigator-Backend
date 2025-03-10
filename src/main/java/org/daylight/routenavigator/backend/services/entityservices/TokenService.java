@@ -14,6 +14,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+/**
+ * A service for the Token repository
+ */
 @Service
 public class TokenService {
     @Autowired

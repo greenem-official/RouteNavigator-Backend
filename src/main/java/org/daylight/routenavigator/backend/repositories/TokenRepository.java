@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * A repository for Tokens
+ */
 @Repository
 public interface TokenRepository extends CrudRepository<Token, Long> {
     List<Token> findByTokenIn(List<UUID> tokens);

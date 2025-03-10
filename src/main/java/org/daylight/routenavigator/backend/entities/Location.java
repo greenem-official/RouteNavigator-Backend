@@ -7,6 +7,9 @@ import lombok.Data;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+/**
+ * A location database entity
+ */
 @Data
 @Entity
 @Table(name = "locations")

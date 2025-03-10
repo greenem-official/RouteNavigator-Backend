@@ -7,6 +7,9 @@ import lombok.Data;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+/**
+ * A transport type database entity
+ */
 @Data
 @Entity
 @Table(name = "transport_types")

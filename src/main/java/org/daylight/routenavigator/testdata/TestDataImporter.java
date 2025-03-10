@@ -15,6 +15,10 @@ import static org.daylight.routenavigator.constants.TimeConstants.formatter;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+/**
+ * The main class for generating database data
+ * You can set DO_IMPORT to true to reset the database next time and add all generated values
+ */
 @Component
 public class TestDataImporter implements CommandLineRunner {
     private static final boolean DO_IMPORT = false;

@@ -1,6 +1,5 @@
 package org.daylight.routenavigator.backend.services.entityservices;
 
-import org.daylight.routenavigator.backend.entities.Location;
 import org.daylight.routenavigator.backend.entities.TransportType;
 import org.daylight.routenavigator.backend.repositories.TransportTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +9,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * A service for the TransportType repository
+ */
 @Service
 public class TransportTypeService {
     @Autowired

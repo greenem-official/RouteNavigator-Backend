@@ -9,6 +9,9 @@ import lombok.experimental.Accessors;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 
+/**
+ * A route database entity
+ */
 @Data
 @Entity
 @Accessors(chain = true)

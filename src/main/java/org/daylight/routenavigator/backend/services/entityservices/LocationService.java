@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * A service for the Locations repository
+ */
 @Service
 public class LocationService {
     @Autowired

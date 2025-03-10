@@ -9,6 +9,9 @@ import org.daylight.routenavigator.backend.services.entityservices.TransportType
 import java.time.OffsetDateTime;
 import java.util.*;
 
+/**
+ * A helper class for generating routes data
+ */
 public class DataGeneration {
     private static RouteService routeService;
     private static LocationService locationService;

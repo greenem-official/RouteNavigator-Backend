@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * A class for handling token validation
+ * A class for handling token validation (checking that it exists and hasn't expired)
  */
 @Service
 public class TokenManager {

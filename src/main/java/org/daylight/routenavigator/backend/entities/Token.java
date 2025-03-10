@@ -10,6 +10,9 @@ import lombok.experimental.Accessors;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+/**
+ * A token database entity, including the assigned user and an expiration date
+ */
 @Data
 @Entity
 @Table(name = "tokens")

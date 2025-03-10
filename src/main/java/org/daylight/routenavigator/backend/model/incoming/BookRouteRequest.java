@@ -7,6 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+/**
+ * An incoming structure representing a request to book a route
+ */
 @Data
 @Accessors(chain = true)
 @AllArgsConstructor

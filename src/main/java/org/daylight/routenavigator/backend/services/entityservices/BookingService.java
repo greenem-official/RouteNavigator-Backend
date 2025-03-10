@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * A service for the Bookings repository
+ */
 @Service
 public class BookingService {
     @Autowired

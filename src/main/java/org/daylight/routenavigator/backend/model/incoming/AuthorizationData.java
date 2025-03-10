@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+/**
+ * An incoming structure representing authorization data
+ */
 @Data
 @Accessors(chain = true)
 @AllArgsConstructor

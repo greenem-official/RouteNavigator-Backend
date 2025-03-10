@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class SpringContextHolder implements ApplicationContextAware {
-
     private static ApplicationContext context;
 
     @Override

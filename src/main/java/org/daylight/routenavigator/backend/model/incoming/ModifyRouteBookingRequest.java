@@ -7,6 +7,9 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import org.hibernate.validator.constraints.Range;
 
+/**
+ * An incoming structure representing a request to modify a route booking
+ */
 @Data
 @Accessors(chain = true)
 @AllArgsConstructor

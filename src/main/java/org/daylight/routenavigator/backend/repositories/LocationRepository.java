@@ -8,6 +8,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * A repository for Locations
+ */
 @Repository
 public interface LocationRepository extends CrudRepository<Location, Long> {
     Optional<Location> findByCode(String code);

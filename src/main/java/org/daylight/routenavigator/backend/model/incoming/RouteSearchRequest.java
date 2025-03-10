@@ -15,6 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * An incoming structure representing a route search request with specified parameters
+ * or a request to chech available days, or a request that only asks for a single day
+ */
 @Data
 @Accessors(chain = true)
 public class RouteSearchRequest {
