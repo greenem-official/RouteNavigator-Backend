@@ -49,7 +49,10 @@
 Если ваша IDE не поддерживает конфигурации запуска Spring Boot приложений, укажите JVM аргумент
 > -Dspring.profiles.active=postgresql
 
-Или запустите без аргументов, но проверьте, что `resources/application.properties` уже имеет те же настройки, что и нужный профиль.
+Или как аргументы командной строки:
+> --spring.profiles.active=postgresql
+
+Либо запустите без аргументов, но проверьте, что `resources/application.properties` уже имеет те же настройки, что и нужный профиль.
 
 ### Сборка проекта в образ Docker
 Для сборки образа `Docker` можно использовать скрипт `deployScript.{bat|sh}`.  
