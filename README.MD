@@ -46,6 +46,11 @@
 4. Один раз запустите `dev_env/createDevEnv.{bat|sh}` для создания dev-окружения, а именно dev базы данных.  
 5. Запустите главный метод класса `MarketplaceApplication`. Проверьте, что профиль Spring стоит на нужном значении, например, `postgresql`.  
 
+Если ваша IDE не поддерживает конфигурации запуска Spring Boot приложений, укажите JVM аргумент
+> -Dspring.profiles.active=postgresql
+
+Или запустите без аргументов, но проверьте, что `resources/application.properties` уже имеет те же настройки, что и нужный профиль.
+
 ### Сборка проекта в образ Docker
 Для сборки образа `Docker` можно использовать скрипт `deployScript.{bat|sh}`.  
 
