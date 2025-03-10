@@ -64,14 +64,12 @@ public class RouteService {
 
     private List<TransportType> extractTransportTypes(RouteSearchRequest routeSearchRequest) {
         List<TransportType> transportTypes = new ArrayList<>();
-        routeSearchRequest.getTransportAllowed().forEach((key, value) -> {
-            if (value) {
-                Optional<TransportType> transportTypeObj = transportTypeService.findByCode(key);
-                if (transportTypeObj.isEmpty()) {
-                    throw new IllegalArgumentException("Invalid transportType: " + key);
-                }
-                transportTypes.add(transportTypeObj.get());
+        routeSearchRequest.getTransportAllowed().forEach((value) -> {
+            Optional<TransportType> transportTypeObj = transportTypeService.findByCode(value);
+            if (transportTypeObj.isEmpty()) {
+                throw new IllegalArgumentException("Invalid transportType: " + value);
             }
+            transportTypes.add(transportTypeObj.get());
         });
 
         return transportTypes;

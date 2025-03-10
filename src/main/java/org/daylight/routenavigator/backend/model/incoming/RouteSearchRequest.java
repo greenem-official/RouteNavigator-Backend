@@ -1,5 +1,6 @@
 package org.daylight.routenavigator.backend.model.incoming;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,6 +11,8 @@ import org.hibernate.validator.constraints.Range;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -31,7 +34,7 @@ public class RouteSearchRequest {
     boolean fetchAvailability = false; // true if should return only info of what dates have routes
 
     @NotNull
-    Map<String, Boolean> transportAllowed;
+    List<String> transportAllowed = new ArrayList<>();
 
     @NotNull
     String departureTimeMax = "2100-12-31T23:59:59+03:00"; // OffsetDateTime.of(2100, 12, 31, 23, 59, 59, 0, ZoneOffset.ofHours(3));;
