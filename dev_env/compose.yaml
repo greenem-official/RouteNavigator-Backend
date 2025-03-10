@@ -1,0 +1,23 @@
+services:
+  routenav_testenv_postgres:
+    image: postgres:latest
+    container_name: routenav_testenv_postgres_container
+    restart: always
+    ports:
+      - "5409:5432"
+    environment:
+      POSTGRES_USER: ivan
+      POSTGRES_PASSWORD: "123456"
+      POSTGRES_DB: maindb
+      POSTGRES_DATA: /var/lib/postgresql/data
+    networks:
+      - routenav_testenv_network
+    volumes:
+      - routenav_testenv_postgres_volume:/var/lib/postgresql/data
+#      - ./postgres_data/initial_postgres_data.sql:/docker-entrypoint-initdb.d/init.sql
+
+networks:
+  routenav_testenv_network:
+
+volumes:
+  routenav_testenv_postgres_volume:

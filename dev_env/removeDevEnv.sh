@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo "Creating the environment dev container..."
+docker compose -p routenav_dev down
