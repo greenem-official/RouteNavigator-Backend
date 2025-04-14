@@ -315,12 +315,11 @@ public class TestDataImporter implements CommandLineRunner {
         );
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
     public void importRoutes() {
         System.out.println("Generating routes data...");
         List<Route> routes = DataGeneration.prepareRoutesForTimeframe(
-                OffsetDateTime.parse("2025-02-20 00:00:00+03:00", formatter),
-                OffsetDateTime.parse("2025-04-20 00:00:00+03:00", formatter)
+                OffsetDateTime.parse("2025-04-10 00:00:00+03:00", formatter),
+                OffsetDateTime.parse("2025-06-20 00:00:00+03:00", formatter)
         );
 
         System.out.println("Saving routes data...");
