@@ -14,6 +14,11 @@ import java.time.OffsetDateTime;
  */
 @Data
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_route_departure_location", columnList = "departure_location_id"),
+        @Index(name = "idx_route_arrival_location", columnList = "arrival_location_id"),
+        @Index(name = "idx_route_transport_type", columnList = "transport_type_id"),
+})
 @Accessors(chain = true)
 public class Route {
     @Id
