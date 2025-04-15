@@ -107,7 +107,6 @@ public class MainRestController {
         try {
             userService.save(newUser);
         } catch (DataIntegrityViolationException e) {
-//            System.out.println(e.getMessage());
             e.printStackTrace();
             return new ResponseEntity<>(new ErrorResponse("internal_error"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -146,7 +145,6 @@ public class MainRestController {
      */
     @PostMapping(value = "/findRoutes", consumes = "application/json")
     public ResponseEntity<?> findRoutes(@Valid @RequestBody RouteSearchRequest routeSearchRequest) {
-//        System.out.println(routeSearchRequest.toString());
         try {
             OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMin());
             OffsetDateTime.parse(routeSearchRequest.getDepartureTimeMax());

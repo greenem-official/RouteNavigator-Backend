@@ -6,6 +6,8 @@ import org.daylight.routenavigator.backend.entities.TransportType;
 import org.daylight.routenavigator.backend.model.incoming.RouteSearchRequest;
 import org.daylight.routenavigator.backend.repositories.RouteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -93,6 +95,11 @@ public class RouteService {
         return locationResult;
     }
 
+    @Cacheable(
+            value = "routes",
+            keyGenerator = "routeKeyGenerator",
+            unless = "#result == null || #result.isEmpty()"
+    )
     public List<Route> findAllByRequest(RouteSearchRequest routeSearchRequest) {
         // Finding and checking provided transport types;
         List<TransportType> transportTypes = extractTransportTypes(routeSearchRequest);
@@ -109,7 +116,7 @@ public class RouteService {
             );
         }
 
-//        System.out.println(routeSearchRequest.toString());
+        OffsetDateTime now = OffsetDateTime.now();
 
         // Querying
         return routeRepository.findAllByRequest(
@@ -121,11 +128,18 @@ public class RouteService {
                 transportTypes,
                 routeSearchRequest.getMinPrice(),
                 routeSearchRequest.getMaxPrice(),
-                OffsetDateTime.now(),
+                now,
                 PageRequest.of(0, Math.min(100, routeSearchRequest.getAmountLimit()))
-        );
+        ).stream()
+                .filter(route -> route.getDepartureTime().isAfter(now))
+                .collect(Collectors.toList());
     }
 
+    @Cacheable(
+            value = "routeDates",
+            keyGenerator = "routeKeyGenerator",
+            unless = "#result == null || #result.isEmpty()"
+    )
     public List<String> findDatesForRequest(RouteSearchRequest routeSearchRequest) {
         // Finding and checking provided transport types;
         List<TransportType> transportTypes = extractTransportTypes(routeSearchRequest);
