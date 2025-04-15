@@ -1,6 +1,6 @@
 @echo off
 
-set VERSION=1.0.0
+set VERSION=1.1.0
 
 echo Building the project...
 call ./gradlew build -x test --stacktrace
